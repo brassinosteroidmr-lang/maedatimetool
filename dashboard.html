@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>業務分析ダッシュボード</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <div class="header">
+            <h1>📊 業務分析ダッシュボード</h1>
+            <div class="header-actions">
+                <a href="index.html" class="back-btn">← メインページに戻る</a>
+            </div>
+        </div>
+
+        <!-- サマリーカード -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="card-icon">📅</div>
+                <div class="card-content">
+                    <div class="card-label">今日の業務時間</div>
+                    <div class="card-value" id="today-total">0時間0分</div>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="card-icon">📈</div>
+                <div class="card-content">
+                    <div class="card-label">今週の業務時間</div>
+                    <div class="card-value" id="week-total">0時間0分</div>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="card-icon">🏆</div>
+                <div class="card-content">
+                    <div class="card-label">最も時間を使った業務</div>
+                    <div class="card-value" id="top-task">-</div>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="card-icon">📋</div>
+                <div class="card-content">
+                    <div class="card-label">総記録数</div>
+                    <div class="card-value" id="total-records">0件</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div class="main-dashboard">
+            <!-- 期間選択 -->
+            <div class="period-selector">
+                <h2>分析期間</h2>
+                <div class="period-buttons">
+                    <button class="period-btn active" data-period="today">今日</button>
+                    <button class="period-btn" data-period="week">今週</button>
+                    <button class="period-btn" data-period="month">今月</button>
+                    <button class="period-btn" data-period="all">全期間</button>
+                </div>
+            </div>
+
+            <!-- 横並びセクション: グラフとテーブル -->
+            <div class="dashboard-row">
+                <!-- 業務別時間グラフ -->
+                <div class="chart-section chart-half">
+                    <h2>業務別時間配分</h2>
+                    <div class="chart-container">
+                        <canvas id="task-chart"></canvas>
+                    </div>
+                    <div id="no-data-message" class="no-data" style="display: none;">
+                        選択期間にデータがありません
+                    </div>
+                </div>
+
+                <!-- 業務一覧テーブル -->
+                <div class="table-section table-half">
+                    <h2>業務別詳細</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>業務名</th>
+                                    <th>回数</th>
+                                    <th>合計時間</th>
+                                    <th>平均時間</th>
+                                    <th>割合</th>
+                                </tr>
+                            </thead>
+                            <tbody id="task-table-body">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #606060; padding: 20px;">
+                                        データがありません
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 日別推移グラフ（全幅） -->
+            <div class="chart-section">
+                <h2>日別業務時間推移（過去7日間）</h2>
+                <div class="chart-container">
+                    <canvas id="daily-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+/* ダッシュボード専用スタイル */
+
+.header-actions {
+    display: flex;
+    align-items: center;
+}
+
+.back-btn {
+    padding: 8px 16px;
+    background: #3a3a3a;
+    color: #c8c8c8;
+    border: 1px solid #4a4a4a;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.back-btn:hover {
+    background: #4a4a4a;
+    color: #e0e0e0;
+}
+
+/* サマリーカード */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.summary-card {
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s;
+}
+
+.summary-card:hover {
+    background: #2d2d2d;
+    border-color: #4a4a4a;
+}
+
+.card-icon {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-label {
+    font-size: 10px;
+    color: #909090;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.card-value {
+    font-size: 16px;
+    color: #d8d8d8;
+    font-weight: 600;
+}
+
+/* メインダッシュボード */
+.main-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 横並びレイアウト */
+.dashboard-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.chart-half,
+.table-half {
+    min-width: 0; /* グリッドオーバーフロー対策 */
+}
+
+/* 期間選択 */
+.period-selector {
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    padding: 15px;
+}
+
+.period-selector h2 {
+    font-size: 13px;
+    color: #b8b8b8;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.period-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.period-btn {
+    padding: 6px 16px;
+    background: #3a3a3a;
+    color: #c8c8c8;
+    border: 1px solid #4a4a4a;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.period-btn:hover {
+    background: #4a4a4a;
+    color: #e0e0e0;
+}
+
+.period-btn.active {
+    background: #4a5a4a;
+    color: #d0f0d0;
+    border-color: #5a6a5a;
+}
+
+/* チャートセクション */
+.chart-section {
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    padding: 15px;
+}
+
+.chart-section h2 {
+    font-size: 13px;
+    color: #b8b8b8;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #3a3a3a;
+}
+
+.chart-container {
+    position: relative;
+    height: 220px;
+    padding: 5px;
+}
+
+.no-data {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 220px;
+    color: #606060;
+    font-size: 13px;
+}
+
+/* テーブルセクション */
+.table-section {
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    padding: 15px;
+}
+
+.table-section h2 {
+    font-size: 13px;
+    color: #b8b8b8;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #3a3a3a;
+}
+
+.table-container {
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+/* 横並び時のテーブル高さ調整 */
+.table-half .table-container {
+    max-height: 220px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.data-table thead {
+    background: #333;
+}
+
+.data-table th {
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 500;
+    color: #b0b0b0;
+    border-bottom: 2px solid #4a4a4a;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+}
+
+.data-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #3a3a3a;
+    color: #c8c8c8;
+}
+
+.data-table tbody tr {
+    transition: background 0.2s;
+}
+
+.data-table tbody tr:hover {
+    background: #2d2d2d;
+}
+
+.data-table .task-name {
+    font-weight: 500;
+    color: #d8d8d8;
+}
+
+.data-table .percentage {
+    color: #a0d0a0;
+    font-weight: 500;
+}
+
+.data-table .count {
+    color: #b0b0b0;
+}
+
+/* レスポンシブ */
+@media (max-width: 1200px) {
+    .dashboard-row {
+        grid-template-columns: 1fr;
+    }
+
+    .table-half .table-container {
+        max-height: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .period-buttons {
+        flex-direction: column;
+    }
+
+    .period-btn {
+        width: 100%;
+    }
+
+    .chart-container {
+        height: 200px;
+    }
+}

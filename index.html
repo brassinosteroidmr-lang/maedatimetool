@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>インフォメーション</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- メインコンテンツエリア -->
+        <div class="main-content">
+            <!-- 統合セクション: 時計と業務記録 -->
+            <div class="top-section">
+                <section class="unified-work-section">
+                    <!-- 左側セクション: 時計と砂時計エリア -->
+                    <section class="time-display-section">
+                    <div class="time-display-area">
+                        <!-- 時計と日付の上部エリア -->
+                        <div class="clock-info-area">
+                            <div id="digital-time" class="digital-time-compact"></div>
+                            <div id="current-date-display" class="date-display-compact"></div>
+                        </div>
+
+                        <!-- 砂時計を並べるエリア -->
+                        <div class="hourglasses-container">
+                            <!-- 勤務時間砂時計 -->
+                            <div class="work-hourglass-wrapper">
+                                <div class="work-time-settings">
+                                    <div class="work-time-inputs-compact">
+                                        <input type="time" id="work-start-time" value="08:30" class="time-input">
+                                        <span>-</span>
+                                        <input type="time" id="work-end-time" value="17:30" class="time-input">
+                                        <button onclick="updateWorkTimeSettings()" class="time-save-btn">設定</button>
+                                    </div>
+                                    <div class="time-info-compact">
+                                        <div id="elapsed-time">経過: 0:00</div>
+                                        <div id="remaining-time">残り: 9:00</div>
+                                    </div>
+                                </div>
+                                <div class="hourglass-container" id="hourglass-container">
+                            <div class="hourglass">
+                                <!-- 上部キャピタル（柱頭） -->
+                                <div class="column-capital top">
+                                    <div class="capital-abacus"></div>
+                                    <div class="capital-echinus"></div>
+                                </div>
+
+                                <!-- 支柱（左右） -->
+                                <div class="column-shaft left"></div>
+                                <div class="column-shaft right"></div>
+
+                                <!-- 一体型ガラス容器 -->
+                                <div class="glass-vessel">
+                                    <!-- 上部円錐容器 -->
+                                    <div class="glass-cone upper-cone">
+                                        <div class="glass-shine-upper"></div>
+                                        <div class="glass-reflection-upper"></div>
+                                        <div id="sand-top" class="sand-content upper-content">
+                                            <div class="sand-top-surface"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 極細の首部分 -->
+                                    <div class="glass-throat">
+                                        <div class="throat-inner-shadow"></div>
+                                        <div class="falling-particles"></div>
+                                    </div>
+
+                                    <!-- 下部円錐容器 -->
+                                    <div class="glass-cone lower-cone">
+                                        <div class="glass-shine-lower"></div>
+                                        <div class="glass-reflection-lower"></div>
+                                        <div id="sand-bottom" class="sand-content lower-content">
+                                            <div class="sand-pile-peak"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 下部キャピタル（柱頭） -->
+                                <div class="column-capital bottom">
+                                    <div class="capital-echinus"></div>
+                                    <div class="capital-abacus"></div>
+                                </div>
+                            </div>
+                                </div>
+                            </div>
+
+                            <!-- カウントダウン砂時計 -->
+                            <div class="timer-section">
+                        <div class="timer-controls">
+                            <input type="number" id="countdown-minutes" min="1" max="180" value="5" placeholder="分">
+                            <button onclick="startCountdownTimer()" class="timer-btn">開始</button>
+                            <button onclick="stopCountdownTimer()" class="timer-btn-stop">停止</button>
+                        </div>
+                        <div class="countdown-display" id="countdown-display">5:00</div>
+                        <div class="mini-hourglass-container" id="mini-hourglass-container">
+                            <div class="mini-hourglass">
+                                <!-- 上部キャピタル（柱頭） -->
+                                <div class="mini-column-capital mini-top">
+                                    <div class="mini-capital-abacus"></div>
+                                    <div class="mini-capital-echinus"></div>
+                                </div>
+
+                                <!-- 支柱（左右） -->
+                                <div class="mini-column-shaft mini-left"></div>
+                                <div class="mini-column-shaft mini-right"></div>
+
+                                <!-- 一体型ガラス容器 -->
+                                <div class="mini-glass-vessel">
+                                    <!-- 上部円錐容器 -->
+                                    <div class="mini-glass-cone mini-upper-cone">
+                                        <div class="mini-glass-shine-upper"></div>
+                                        <div class="mini-glass-reflection-upper"></div>
+                                        <div id="mini-sand-top" class="mini-sand-content mini-upper-content">
+                                            <div class="mini-sand-top-surface"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 極細の首部分 -->
+                                    <div class="mini-glass-throat">
+                                        <div class="mini-throat-inner-shadow"></div>
+                                        <div class="mini-falling-particles"></div>
+                                    </div>
+
+                                    <!-- 下部円錐容器 -->
+                                    <div class="mini-glass-cone mini-lower-cone">
+                                        <div class="mini-glass-shine-lower"></div>
+                                        <div class="mini-glass-reflection-lower"></div>
+                                        <div id="mini-sand-bottom" class="mini-sand-content mini-lower-content">
+                                            <div class="mini-sand-pile-peak"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 下部キャピタル（柱頭） -->
+                                <div class="mini-column-capital mini-bottom">
+                                    <div class="mini-capital-echinus"></div>
+                                    <div class="mini-capital-abacus"></div>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                    </section>
+
+                    <!-- 右側セクション: 業務記録 -->
+                    <section class="business-record-section">
+                    <div class="business-record-area">
+                        <div class="record-header">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <h2 style="margin: 0;">業務記録</h2>
+                                <a href="dashboard.html" class="dashboard-link" title="業務分析ダッシュボード">📊 分析</a>
+                            </div>
+                            <div class="record-actions">
+                                <button onclick="exportRecordsCSV()" class="export-btn" title="記録をCSVで出力">CSV</button>
+                                <button onclick="exportTasksOnly()" class="export-btn" title="業務項目のみ保存">項目保存</button>
+                                <button onclick="importTasksOnly()" class="import-btn" title="業務項目のみ読込">項目読込</button>
+                                <button onclick="importRecordsJSON()" class="import-btn" title="全データ読込">全読込</button>
+                                <button onclick="exportRecordsJSON()" class="export-btn" title="全データ保存">全保存</button>
+                                <button onclick="clearRecords()" class="clear-btn" title="記録のみリセット">記録削除</button>
+                            </div>
+                        </div>
+
+                        <!-- クイック業務ボタン -->
+                        <div class="quick-task-buttons" id="quick-task-buttons"></div>
+
+                        <!-- カスタムボタン追加 -->
+                        <div class="add-task-button">
+                            <input type="text" id="new-task-button-name" placeholder="新しい業務名...">
+                            <button onclick="addQuickTaskButton()">追加</button>
+                        </div>
+
+                        <!-- 現在の作業 -->
+                        <div id="current-task" class="current-task"></div>
+
+                        <!-- 記録リスト -->
+                        <div id="record-list" class="record-list"></div>
+                    </div>
+                    </section>
+                </section>
+            </div>
+
+            <!-- 下段: カレンダー -->
+            <div class="bottom-section">
+                <section class="calendar-section">
+                    <div class="calendar-header-section">
+                        <div class="calendar-navigation">
+                            <h2>カレンダー</h2>
+                            <div class="calendar-nav-buttons">
+                                <button onclick="previousMonths()" class="nav-btn">◀ 前</button>
+                                <button onclick="resetToCurrentMonth()" class="nav-btn">今月</button>
+                                <button onclick="nextMonths()" class="nav-btn">次 ▶</button>
+                            </div>
+                        </div>
+                        <div class="delivery-calculator">
+                            <input type="date" id="calc-order-date" class="calc-input">
+                            <label>LT:</label>
+                            <input type="number" id="calc-lead-time" value="14" min="1" class="calc-input-number">
+                            <select id="calc-mode" class="calc-select">
+                                <option value="business">営業日</option>
+                                <option value="calendar">暦日</option>
+                            </select>
+                            <button onclick="calculateDelivery()" class="calc-btn">計算</button>
+                            <span id="calc-result" class="calc-result"></span>
+                        </div>
+                    </div>
+                    <div id="calendar-container"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

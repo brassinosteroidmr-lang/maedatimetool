@@ -767,10 +767,11 @@ function closeEditModal() {
 // データエクスポート・インポート機能
 // ========================================
 
-// 業務項目のみエクスポート
+// 業務項目のみエクスポート（定型文設定も含む）
 function exportTasksOnly() {
     const data = {
         quickTasks: getQuickTasks(),
+        templateSettings: getTemplateSettings(),
         exportDate: new Date().toISOString()
     };
 
@@ -789,7 +790,7 @@ function exportTasksOnly() {
     URL.revokeObjectURL(url);
 }
 
-// 業務項目のみインポート
+// 業務項目のみインポート（定型文設定も含む）
 function importTasksOnly() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -804,12 +805,24 @@ function importTasksOnly() {
             try {
                 const data = JSON.parse(event.target.result);
 
+                let loaded = false;
+
                 if (data.quickTasks) {
                     saveQuickTasks(data.quickTasks);
                     renderQuickTaskButtons();
-                    alert('業務項目を読み込みました');
+                    loaded = true;
+                }
+
+                if (data.templateSettings) {
+                    saveTemplateSettings(data.templateSettings);
+                    renderTemplateList();
+                    loaded = true;
+                }
+
+                if (loaded) {
+                    alert('業務項目と定型文設定を読み込みました');
                 } else {
-                    alert('有効な業務項目データが見つかりません');
+                    alert('有効なデータが見つかりません');
                 }
             } catch (error) {
                 alert('ファイルの読み込みに失敗しました');
@@ -862,11 +875,12 @@ function exportRecordsCSV() {
     document.body.removeChild(link);
 }
 
-// JSON形式でデータ保存（業務項目+記録）
+// JSON形式でデータ保存（業務項目+記録+定型文設定）
 function exportRecordsJSON() {
     const data = {
         quickTasks: getQuickTasks(),
         records: getTaskRecords(),
+        templateSettings: getTemplateSettings(),
         exportDate: new Date().toISOString()
     };
 
@@ -885,7 +899,7 @@ function exportRecordsJSON() {
     document.body.removeChild(link);
 }
 
-// JSON形式でデータ読込
+// JSON形式でデータ読込（定型文設定も含む）
 function importRecordsJSON() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -908,6 +922,11 @@ function importRecordsJSON() {
                 if (data.records) {
                     saveTaskRecords(data.records);
                     renderTaskRecords();
+                }
+
+                if (data.templateSettings) {
+                    saveTemplateSettings(data.templateSettings);
+                    renderTemplateList();
                 }
 
                 alert('データを読み込みました');
@@ -1461,6 +1480,9 @@ function init() {
     renderQuickTaskButtons();
     renderTaskRecords();
 
+    // 定型文リスト表示
+    renderTemplateList();
+
     // 納期計算機の発注日デフォルト値を今日に設定
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('calc-order-date').value = today;
@@ -1480,6 +1502,193 @@ function init() {
         miniSandBottom.style.height = '100%';
     }
 }
+
+// ========================================
+// 定型文コピペ機能
+// ========================================
+
+// デフォルトの定型文
+const defaultTemplates = [
+    '現時点では上記希望納期対応可能です',
+    '現時点では在庫にて上記希望納期対応可能です',
+    'PN登録中',
+    '納期確認中'
+];
+
+// 定型文設定の取得
+function getTemplateSettings() {
+    const saved = localStorage.getItem('template-settings');
+    if (saved) {
+        return JSON.parse(saved);
+    }
+    return {
+        name: '前田',
+        templates: defaultTemplates
+    };
+}
+
+// 定型文設定の保存
+function saveTemplateSettings(settings) {
+    localStorage.setItem('template-settings', JSON.stringify(settings));
+}
+
+// 今日の日付を取得（YYYY/MM/DD形式）
+function getTodayDate() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}/${month}/${day}`;
+}
+
+// 定型文リストの表示
+function renderTemplateList() {
+    const container = document.getElementById('template-list');
+    const settings = getTemplateSettings();
+    const today = getTodayDate();
+
+    let html = '';
+    settings.templates.forEach((template, index) => {
+        const formattedText = `${today}（${settings.name}）${template}`;
+        html += `
+            <div class="template-item">
+                <div class="template-text" onclick="copyTemplate(${index})" title="クリックでコピー">
+                    ${template}
+                </div>
+                <button class="template-copy-btn" onclick="copyTemplate(${index})" title="コピー">📋</button>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// 定型文をクリップボードにコピー
+function copyTemplate(index) {
+    const settings = getTemplateSettings();
+    const template = settings.templates[index];
+    const today = getTodayDate();
+    const formattedText = `${today}（${settings.name}）${template}`;
+
+    // クリップボードにコピー
+    navigator.clipboard.writeText(formattedText).then(() => {
+        // コピー成功のフィードバック
+        showCopyFeedback(index);
+    }).catch(err => {
+        console.error('コピー失敗:', err);
+        alert('クリップボードへのコピーに失敗しました');
+    });
+}
+
+// コピー成功のフィードバック表示
+function showCopyFeedback(index) {
+    const items = document.querySelectorAll('.template-item');
+    if (items[index]) {
+        items[index].classList.add('copied');
+        setTimeout(() => {
+            items[index].classList.remove('copied');
+        }, 1000);
+    }
+}
+
+// 定型文設定モーダルを開く
+function openTemplateSettings() {
+    const settings = getTemplateSettings();
+
+    const modal = document.createElement('div');
+    modal.className = 'edit-modal';
+    modal.innerHTML = `
+        <div class="edit-modal-content">
+            <h3>定型文設定</h3>
+            <div class="edit-form">
+                <label>名前:</label>
+                <input type="text" id="template-name" value="${settings.name}" class="edit-input" placeholder="前田">
+
+                <label>定型文 1:</label>
+                <input type="text" id="template-1" value="${settings.templates[0] || ''}" class="edit-input" placeholder="現時点では上記希望納期対応可能です">
+
+                <label>定型文 2:</label>
+                <input type="text" id="template-2" value="${settings.templates[1] || ''}" class="edit-input" placeholder="現時点では在庫にて上記希望納期対応可能です">
+
+                <label>定型文 3:</label>
+                <input type="text" id="template-3" value="${settings.templates[2] || ''}" class="edit-input" placeholder="PN登録中">
+
+                <label>定型文 4:</label>
+                <input type="text" id="template-4" value="${settings.templates[3] || ''}" class="edit-input" placeholder="納期確認中">
+
+                <div class="template-preview">
+                    <label>プレビュー:</label>
+                    <div id="template-preview-text" class="template-preview-text"></div>
+                </div>
+
+                <div class="edit-buttons">
+                    <button onclick="saveTemplateSettings()" class="save-btn">保存</button>
+                    <button onclick="closeEditModal()" class="cancel-btn">キャンセル</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // プレビューを更新
+    updateTemplatePreview();
+
+    // 入力時にプレビューを更新
+    ['template-name', 'template-1', 'template-2', 'template-3', 'template-4'].forEach(id => {
+        const elem = document.getElementById(id);
+        if (elem) {
+            elem.addEventListener('input', updateTemplatePreview);
+        }
+    });
+}
+
+// プレビュー更新
+function updateTemplatePreview() {
+    const name = document.getElementById('template-name')?.value || '前田';
+    const template1 = document.getElementById('template-1')?.value || '';
+    const today = getTodayDate();
+
+    const preview = document.getElementById('template-preview-text');
+    if (preview && template1) {
+        preview.textContent = `${today}（${name}）${template1}`;
+    } else if (preview) {
+        preview.textContent = '定型文を入力してください';
+    }
+}
+
+// 定型文設定を保存（モーダルから）
+function saveTemplateSettingsFromModal() {
+    const name = document.getElementById('template-name').value.trim();
+    const template1 = document.getElementById('template-1').value.trim();
+    const template2 = document.getElementById('template-2').value.trim();
+    const template3 = document.getElementById('template-3').value.trim();
+    const template4 = document.getElementById('template-4').value.trim();
+
+    if (!name) {
+        alert('名前を入力してください');
+        return;
+    }
+
+    const templates = [template1, template2, template3, template4].filter(t => t !== '');
+
+    if (templates.length === 0) {
+        alert('少なくとも1つの定型文を入力してください');
+        return;
+    }
+
+    const settings = {
+        name: name,
+        templates: templates
+    };
+
+    saveTemplateSettings(settings);
+    renderTemplateList();
+    closeEditModal();
+}
+
+// グローバルスコープに関数を公開
+window.saveTemplateSettings = saveTemplateSettingsFromModal;
 
 // ページ読み込み時に初期化
 document.addEventListener('DOMContentLoaded', init);

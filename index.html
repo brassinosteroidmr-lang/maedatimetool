@@ -10,35 +10,35 @@
     <div class="container">
         <!-- メインコンテンツエリア -->
         <div class="main-content">
-            <!-- 統合セクション: 時計と業務記録 -->
+            <!-- 上段: 時計・砂時計と業務記録 -->
             <div class="top-section">
-                <section class="unified-work-section">
-                    <!-- 左側セクション: 時計と砂時計エリア -->
-                    <section class="time-display-section">
-                    <div class="time-display-area">
-                        <!-- 時計と日付の上部エリア -->
-                        <div class="clock-info-area">
-                            <div id="digital-time" class="digital-time-compact"></div>
-                            <div id="current-date-display" class="date-display-compact"></div>
-                        </div>
+                <div class="horizontal-sections">
+                    <!-- 左側: 時計と砂時計エリア -->
+                    <section class="template-section">
+                        <div class="time-display-area">
+                            <!-- 時計と日付の上部エリア -->
+                            <div class="clock-info-area">
+                                <div id="digital-time" class="digital-time-compact"></div>
+                                <div id="current-date-display" class="date-display-compact"></div>
+                            </div>
 
-                        <!-- 砂時計を並べるエリア -->
-                        <div class="hourglasses-container">
-                            <!-- 勤務時間砂時計 -->
-                            <div class="work-hourglass-wrapper">
-                                <div class="work-time-settings">
-                                    <div class="work-time-inputs-compact">
-                                        <input type="time" id="work-start-time" value="08:30" class="time-input">
-                                        <span>-</span>
-                                        <input type="time" id="work-end-time" value="17:30" class="time-input">
-                                        <button onclick="updateWorkTimeSettings()" class="time-save-btn">設定</button>
+                            <!-- 砂時計を並べるエリア -->
+                            <div class="hourglasses-container">
+                                <!-- 勤務時間砂時計 -->
+                                <div class="work-hourglass-wrapper">
+                                    <div class="work-time-settings">
+                                        <div class="work-time-inputs-compact">
+                                            <input type="time" id="work-start-time" value="08:30" class="time-input">
+                                            <span>-</span>
+                                            <input type="time" id="work-end-time" value="17:30" class="time-input">
+                                            <button onclick="updateWorkTimeSettings()" class="time-save-btn">設定</button>
+                                        </div>
+                                        <div class="time-info-compact">
+                                            <div id="elapsed-time">経過: 0:00</div>
+                                            <div id="remaining-time">残り: 9:00</div>
+                                        </div>
                                     </div>
-                                    <div class="time-info-compact">
-                                        <div id="elapsed-time">経過: 0:00</div>
-                                        <div id="remaining-time">残り: 9:00</div>
-                                    </div>
-                                </div>
-                                <div class="hourglass-container" id="hourglass-container">
+                                    <div class="hourglass-container" id="hourglass-container">
                             <div class="hourglass">
                                 <!-- 上部キャピタル（柱頭） -->
                                 <div class="column-capital top">
@@ -82,19 +82,19 @@
                                     <div class="capital-echinus"></div>
                                     <div class="capital-abacus"></div>
                                 </div>
-                            </div>
+                                    </div>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <!-- カウントダウン砂時計 -->
-                            <div class="timer-section">
-                        <div class="timer-controls">
-                            <input type="number" id="countdown-minutes" min="1" max="180" value="5" placeholder="分">
-                            <button onclick="startCountdownTimer()" class="timer-btn">開始</button>
-                            <button onclick="stopCountdownTimer()" class="timer-btn-stop">停止</button>
-                        </div>
-                        <div class="countdown-display" id="countdown-display">5:00</div>
-                        <div class="mini-hourglass-container" id="mini-hourglass-container">
+                                <!-- カウントダウン砂時計 -->
+                                <div class="timer-section">
+                                    <div class="timer-controls">
+                                        <input type="number" id="countdown-minutes" min="1" max="180" value="5" placeholder="分">
+                                        <button onclick="startCountdownTimer()" class="timer-btn">開始</button>
+                                        <button onclick="stopCountdownTimer()" class="timer-btn-stop">停止</button>
+                                    </div>
+                                    <div class="countdown-display" id="countdown-display">5:00</div>
+                                    <div class="mini-hourglass-container" id="mini-hourglass-container">
                             <div class="mini-hourglass">
                                 <!-- 上部キャピタル（柱頭） -->
                                 <div class="mini-column-capital mini-top">
@@ -138,27 +138,30 @@
                                     <div class="mini-capital-echinus"></div>
                                     <div class="mini-capital-abacus"></div>
                                 </div>
+                                    </div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- 全設定管理ボタン -->
+                            <div class="settings-management">
+                                <button onclick="exportAllSettings()" class="export-all-btn" title="全設定をファイルに保存">💾 全設定保存</button>
+                                <button onclick="importAllSettings()" class="import-all-btn" title="全設定をファイルから読込">📂 全設定読込</button>
                             </div>
                         </div>
-                    </div>
                     </section>
 
-                    <!-- 右側セクション: 業務記録 -->
-                    <section class="business-record-section">
-                    <div class="business-record-area">
+                    <!-- 右側: 業務記録 -->
+                    <section class="template-section">
+                        <div class="business-record-area">
                         <div class="record-header">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <h2 style="margin: 0;">業務記録</h2>
-                                <a href="dashboard.html" class="dashboard-link" title="業務分析ダッシュボード">📊 分析</a>
+                                <a href="dashboard.html" target="_blank" rel="noopener noreferrer" class="dashboard-link" title="業務分析ダッシュボード">📊 分析</a>
                             </div>
                             <div class="record-actions">
-                                <button onclick="exportRecordsCSV()" class="export-btn" title="記録をCSVで出力">CSV</button>
-                                <button onclick="exportTasksOnly()" class="export-btn" title="業務項目のみ保存">項目保存</button>
-                                <button onclick="importTasksOnly()" class="import-btn" title="業務項目のみ読込">項目読込</button>
-                                <button onclick="importRecordsJSON()" class="import-btn" title="全データ読込">全読込</button>
-                                <button onclick="exportRecordsJSON()" class="export-btn" title="全データ保存">全保存</button>
-                                <button onclick="clearRecords()" class="clear-btn" title="記録のみリセット">記録削除</button>
+                                <button onclick="exportRecordsCSV()" class="export-btn" title="業務記録をCSV出力">CSV出力</button>
+                                <button onclick="clearRecords()" class="clear-btn" title="業務記録のみ削除">記録削除</button>
                             </div>
                         </div>
 
@@ -174,24 +177,54 @@
                         <!-- 現在の作業 -->
                         <div id="current-task" class="current-task"></div>
 
-                        <!-- 記録リスト -->
-                        <div id="record-list" class="record-list"></div>
-                    </div>
+                            <!-- 記録リスト -->
+                            <div id="record-list" class="record-list"></div>
+                        </div>
                     </section>
-                </section>
+                </div>
             </div>
 
-            <!-- 中段: 定型文 -->
+            <!-- 中段: 定型文とExcel処理 -->
             <div class="middle-section">
-                <section class="template-section">
-                    <div class="template-text-section">
-                        <div class="template-header">
-                            <h3>定型文</h3>
-                            <button onclick="openTemplateSettings()" class="template-settings-btn" title="設定">⚙</button>
+                <div class="horizontal-sections">
+                    <!-- 定型文セクション -->
+                    <section class="template-section">
+                        <div class="template-text-section">
+                            <div class="template-header">
+                                <h3>定型文</h3>
+                                <button onclick="openTemplateSettings()" class="template-settings-btn" title="設定">⚙</button>
+                            </div>
+                            <div id="template-list" class="template-list"></div>
                         </div>
-                        <div id="template-list" class="template-list"></div>
-                    </div>
-                </section>
+                    </section>
+
+                    <!-- Excel処理セクション -->
+                    <section class="template-section">
+                        <div class="excel-processor-section">
+                            <div class="template-header">
+                                <h3>Excelファイル処理</h3>
+                            </div>
+                            <div class="excel-processor-content">
+                                <div class="folder-select-group">
+                                    <button onclick="selectWorkFolder()" class="folder-select-btn">作業フォルダを選択</button>
+                                    <div id="folder-path-display" class="folder-path-display">フォルダが選択されていません</div>
+                                </div>
+                                <div class="file-list-group">
+                                    <div class="file-list-item">
+                                        <span class="file-label">コピー元:</span>
+                                        <span id="source-file-name" class="file-name-display">未検出</span>
+                                    </div>
+                                    <div class="file-list-item">
+                                        <span class="file-label">貼り付け先:</span>
+                                        <span id="dest-file-name" class="file-name-display">未検出</span>
+                                    </div>
+                                </div>
+                                <button onclick="processExcelFilesAuto()" class="excel-process-btn" id="process-btn" disabled>処理実行して保存</button>
+                                <div id="excel-status" class="excel-status"></div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
             </div>
 
             <!-- 下段: カレンダー -->
@@ -224,6 +257,32 @@
         </div>
     </div>
 
+    <!-- 業務詳細ポップアップ -->
+    <div id="work-detail-modal" class="work-detail-modal" style="display: none;">
+        <div class="work-detail-modal-content">
+            <div class="work-detail-header">
+                <h3 id="work-detail-date"></h3>
+                <button onclick="closeWorkDetailModal()" class="close-modal-btn">×</button>
+            </div>
+            <div class="work-detail-body">
+                <div class="work-detail-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">総作業時間:</span>
+                        <span class="summary-value" id="total-work-time">0時間0分</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">業務件数:</span>
+                        <span class="summary-value" id="work-count">0件</span>
+                    </div>
+                </div>
+                <div class="work-detail-list" id="work-detail-list">
+                    <p class="no-data">この日の業務記録はありません</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

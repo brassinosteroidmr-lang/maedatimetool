@@ -70,21 +70,9 @@ body {
     margin-bottom: 20px;
 }
 
-/* 統合ワークセクション */
-.unified-work-section {
-    display: flex;
-    gap: 30px;
-    align-items: flex-start;
-}
-
-/* 左側セクション: 時計と砂時計 */
-.time-display-section {
-    flex-shrink: 0;
-}
-
 /* 左側: 時計と砂時計エリア */
 .time-display-area {
-    width: 350px;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -100,8 +88,19 @@ body {
 /* 砂時計を並べるエリア */
 .hourglasses-container {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     justify-content: center;
+}
+
+/* 全設定管理ボタン */
+.settings-management {
+    margin-top: 10px;
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    padding: 8px;
+    background: rgba(58, 58, 58, 0.3);
+    border-radius: 4px;
 }
 
 /* 勤務時間砂時計ラッパー */
@@ -119,15 +118,9 @@ body {
     justify-content: flex-end;
 }
 
-/* 右側セクション: 業務記録 */
-.business-record-section {
-    flex: 1;
-    min-width: 300px;
-}
-
 /* 右側: 業務記録エリア */
 .business-record-area {
-    max-width: 500px;
+    width: 100%;
 }
 
 .news-section h2, .calendar-section h2, .tools-section h2, .time-record-section h2 {
@@ -187,7 +180,7 @@ body {
     width: 100%;
 }
 
-.export-btn, .import-btn, .clear-btn {
+.export-btn, .import-btn, .clear-btn, .export-all-btn, .import-all-btn {
     padding: 3px 6px;
     background: #3a3a3a;
     color: #c8c8c8;
@@ -202,6 +195,28 @@ body {
 .export-btn:hover, .import-btn:hover {
     background: #4a4a4a;
     color: #e0e0e0;
+}
+
+.export-all-btn {
+    background: #3a4a3a;
+    border-color: #4a5a4a;
+    font-weight: 600;
+}
+
+.export-all-btn:hover {
+    background: #4a5a4a;
+    color: #d0f0d0;
+}
+
+.import-all-btn {
+    background: #3a3a4a;
+    border-color: #4a4a5a;
+    font-weight: 600;
+}
+
+.import-all-btn:hover {
+    background: #4a4a5a;
+    color: #d0d0f0;
 }
 
 .clear-btn {
@@ -400,7 +415,7 @@ body {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
-    max-height: 600px;
+    max-height: 450px;
     overflow-y: auto;
 }
 
@@ -491,6 +506,22 @@ body {
 .calendar-day.other-month {
     color: #505050;
     background: #222;
+}
+
+.calendar-day.has-work {
+    position: relative;
+}
+
+.calendar-day.has-work::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 5px;
+    height: 5px;
+    background: #4ade80;
+    border-radius: 50%;
+    box-shadow: 0 0 3px rgba(74, 222, 128, 0.6);
 }
 
 /* ツールカード */
@@ -611,20 +642,20 @@ body {
 
 /* コンパクトデジタル時計 */
 .digital-time-compact {
-    font-size: 32px;
+    font-size: 24px;
     color: #d8d8d8;
     font-family: 'Courier New', 'SF Mono', 'Monaco', monospace;
     font-weight: 600;
     letter-spacing: 2px;
     text-align: center;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
 }
 
 .date-display-compact {
-    font-size: 12px;
+    font-size: 11px;
     color: #a0a0a0;
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 /* コンパクト勤務時間設定 */
@@ -756,7 +787,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 15px;
+    margin-top: 8px;
     perspective: 1200px;
 }
 
@@ -768,10 +799,10 @@ body {
 }
 
 .hourglass {
-    width: 80px;
-    height: 220px;
+    width: 65px;
+    height: 180px;
     position: relative;
-    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.6));
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.6));
 }
 
 /* ギリシャ柱式キャピタル（柱頭） - コンパクト版 */
@@ -820,7 +851,7 @@ body {
 .column-shaft {
     position: absolute;
     width: 4px;
-    height: 188px;
+    height: 148px;
     top: 16px;
     background: linear-gradient(to right,
         #a8a8a8 0%,
@@ -865,54 +896,62 @@ body {
     z-index: 5;
 }
 
-/* 上部円錐容器 - コンパクト版 */
+/* 上部円錐容器 - 電球型（涙型）に変更 */
 .glass-cone.upper-cone {
     width: 100%;
-    height: 72px;
+    height: 58px;
     position: relative;
     background: radial-gradient(ellipse at 50% 0%,
-        rgba(255, 255, 255, 0.15) 0%,
-        rgba(230, 230, 230, 0.08) 25%,
-        rgba(200, 200, 200, 0.04) 50%,
-        rgba(150, 150, 150, 0.06) 75%,
-        rgba(100, 100, 100, 0.1) 100%);
+        rgba(200, 230, 250, 0.45) 0%,
+        rgba(180, 220, 245, 0.38) 25%,
+        rgba(160, 210, 240, 0.32) 50%,
+        rgba(140, 200, 235, 0.36) 75%,
+        rgba(120, 190, 230, 0.42) 100%);
     clip-path: polygon(
-        20% 0%, 80% 0%,
-        75% 15%, 70% 30%, 65% 45%, 60% 60%,
-        55% 75%, 52% 85%, 50% 100%,
-        48% 85%, 45% 75%,
-        40% 60%, 35% 45%, 30% 30%, 25% 15%
+        25% 0%, 75% 0%,
+        78% 5%, 80% 10%, 82% 18%, 83% 26%,
+        82% 35%, 80% 44%, 76% 53%, 71% 62%,
+        65% 71%, 60% 80%, 55% 88%, 52% 94%, 50% 100%,
+        48% 94%, 45% 88%, 40% 80%, 35% 71%,
+        29% 62%, 24% 53%, 20% 44%, 18% 35%,
+        17% 26%, 18% 18%, 20% 10%, 22% 5%
     );
     overflow: hidden;
     box-shadow:
-        inset -1px 1px 6px rgba(255, 255, 255, 0.3),
-        inset 1px -1px 6px rgba(0, 0, 0, 0.15),
-        0 2px 10px rgba(0, 0, 0, 0.25);
+        inset -2px 2px 10px rgba(255, 255, 255, 0.5),
+        inset 2px -2px 10px rgba(0, 0, 0, 0.25),
+        inset -4px 0 8px rgba(120, 190, 230, 0.3),
+        inset 4px 0 8px rgba(200, 240, 255, 0.2),
+        0 3px 15px rgba(0, 0, 0, 0.3);
 }
 
-/* 下部円錐容器 - コンパクト版 */
+/* 下部円錐容器 - 電球型（涙型）に変更 */
 .glass-cone.lower-cone {
     width: 100%;
-    height: 72px;
+    height: 58px;
     position: relative;
     background: radial-gradient(ellipse at 50% 100%,
-        rgba(255, 255, 255, 0.15) 0%,
-        rgba(230, 230, 230, 0.08) 25%,
-        rgba(200, 200, 200, 0.04) 50%,
-        rgba(150, 150, 150, 0.06) 75%,
-        rgba(100, 100, 100, 0.1) 100%);
+        rgba(200, 230, 250, 0.45) 0%,
+        rgba(180, 220, 245, 0.38) 25%,
+        rgba(160, 210, 240, 0.32) 50%,
+        rgba(140, 200, 235, 0.36) 75%,
+        rgba(120, 190, 230, 0.42) 100%);
     clip-path: polygon(
-        50% 0%, 48% 15%, 45% 25%,
-        40% 40%, 35% 55%, 30% 70%, 25% 85%,
-        20% 100%, 80% 100%,
-        75% 85%, 70% 70%, 65% 55%, 60% 40%,
-        55% 25%, 52% 15%
+        50% 0%, 48% 6%, 45% 12%, 40% 20%, 35% 29%,
+        29% 38%, 24% 47%, 20% 56%, 18% 65%,
+        17% 74%, 18% 82%, 20% 90%, 22% 95%,
+        25% 100%, 75% 100%,
+        78% 95%, 80% 90%, 82% 82%, 83% 74%,
+        82% 65%, 80% 56%, 76% 47%, 71% 38%,
+        65% 29%, 60% 20%, 55% 12%, 52% 6%
     );
     overflow: hidden;
     box-shadow:
-        inset -1px -1px 6px rgba(255, 255, 255, 0.3),
-        inset 1px 1px 6px rgba(0, 0, 0, 0.15),
-        0 -2px 10px rgba(0, 0, 0, 0.25);
+        inset -2px -2px 10px rgba(255, 255, 255, 0.5),
+        inset 2px 2px 10px rgba(0, 0, 0, 0.25),
+        inset -4px 0 8px rgba(120, 190, 230, 0.3),
+        inset 4px 0 8px rgba(200, 240, 255, 0.2),
+        0 -3px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* 上部のガラスの輝き */
@@ -980,7 +1019,7 @@ body {
 /* 極細の首部分（糸のように細い） */
 .glass-throat {
     width: 4px;
-    height: 18px;
+    height: 14px;
     margin: 0 auto;
     position: relative;
     background: transparent;
@@ -1089,21 +1128,25 @@ body {
 
 .upper-content {
     clip-path: polygon(
-        22% 0%, 78% 0%,
-        74% 15%, 69% 30%, 64% 45%, 59% 60%,
-        54% 75%, 51% 85%, 50% 100%,
-        49% 85%, 46% 75%,
-        41% 60%, 36% 45%, 31% 30%, 26% 15%
+        30% 3%, 70% 3%,
+        72% 8%, 74% 13%, 76% 20%, 77% 28%,
+        76% 37%, 74% 46%, 70% 55%, 65% 64%,
+        59% 73%, 54% 82%, 51% 90%, 50% 97%, 50% 100%,
+        50% 97%, 49% 90%, 46% 82%, 41% 73%,
+        35% 64%, 30% 55%, 26% 46%, 24% 37%,
+        23% 28%, 24% 20%, 26% 13%, 28% 8%
     );
 }
 
 .lower-content {
     clip-path: polygon(
-        50% 0%, 49% 15%, 46% 25%,
-        41% 40%, 36% 55%, 31% 70%, 26% 85%,
-        22% 100%, 78% 100%,
-        74% 85%, 69% 70%, 64% 55%, 59% 40%,
-        54% 25%, 51% 15%
+        50% 0%, 50% 3%, 49% 10%, 46% 18%, 41% 27%,
+        35% 36%, 30% 45%, 26% 54%, 24% 63%,
+        23% 72%, 24% 80%, 26% 87%, 28% 92%,
+        30% 97%, 70% 97%,
+        72% 92%, 74% 87%, 76% 80%, 77% 72%,
+        76% 63%, 74% 54%, 70% 45%, 65% 36%,
+        59% 27%, 54% 18%, 51% 10%, 50% 3%
     );
 }
 
@@ -1264,10 +1307,10 @@ body {
 }
 
 .mini-hourglass {
-    width: 50px;
-    height: 120px;
+    width: 40px;
+    height: 100px;
     position: relative;
-    filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
     transform: rotateZ(0deg); /* デフォルトで正面向き、砂が下 */
     transition: transform 0.8s ease-in-out;
 }
@@ -1323,7 +1366,7 @@ body {
 .mini-column-shaft {
     position: absolute;
     width: 3px;
-    height: 100px;
+    height: 80px;
     top: 10px;
     background: linear-gradient(to right,
         #884040 0%,
@@ -1368,54 +1411,62 @@ body {
     z-index: 5;
 }
 
-/* ミニ上部円錐容器 */
+/* ミニ上部円錐容器 - 電球型（涙型）に変更 */
 .mini-glass-cone.mini-upper-cone {
     width: 100%;
-    height: 40px;
+    height: 34px;
     position: relative;
     background: radial-gradient(ellipse at 50% 0%,
-        rgba(255, 255, 255, 0.15) 0%,
-        rgba(230, 230, 230, 0.08) 25%,
-        rgba(200, 200, 200, 0.04) 50%,
-        rgba(150, 150, 150, 0.06) 75%,
-        rgba(100, 100, 100, 0.1) 100%);
+        rgba(200, 230, 250, 0.45) 0%,
+        rgba(180, 220, 245, 0.38) 25%,
+        rgba(160, 210, 240, 0.32) 50%,
+        rgba(140, 200, 235, 0.36) 75%,
+        rgba(120, 190, 230, 0.42) 100%);
     clip-path: polygon(
-        20% 0%, 80% 0%,
-        75% 15%, 70% 30%, 65% 45%, 60% 60%,
-        55% 75%, 52% 85%, 50% 100%,
-        48% 85%, 45% 75%,
-        40% 60%, 35% 45%, 30% 30%, 25% 15%
+        25% 0%, 75% 0%,
+        78% 5%, 80% 10%, 82% 18%, 83% 26%,
+        82% 35%, 80% 44%, 76% 53%, 71% 62%,
+        65% 71%, 60% 80%, 55% 88%, 52% 94%, 50% 100%,
+        48% 94%, 45% 88%, 40% 80%, 35% 71%,
+        29% 62%, 24% 53%, 20% 44%, 18% 35%,
+        17% 26%, 18% 18%, 20% 10%, 22% 5%
     );
     overflow: hidden;
     box-shadow:
-        inset -1px 1px 6px rgba(255, 255, 255, 0.3),
-        inset 1px -1px 6px rgba(0, 0, 0, 0.15),
-        0 2px 10px rgba(0, 0, 0, 0.25);
+        inset -1.5px 1.5px 8px rgba(255, 255, 255, 0.5),
+        inset 1.5px -1.5px 8px rgba(0, 0, 0, 0.25),
+        inset -3px 0 6px rgba(120, 190, 230, 0.3),
+        inset 3px 0 6px rgba(200, 240, 255, 0.2),
+        0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* ミニ下部円錐容器 */
+/* ミニ下部円錐容器 - 電球型（涙型）に変更 */
 .mini-glass-cone.mini-lower-cone {
     width: 100%;
-    height: 40px;
+    height: 34px;
     position: relative;
     background: radial-gradient(ellipse at 50% 100%,
-        rgba(255, 255, 255, 0.15) 0%,
-        rgba(230, 230, 230, 0.08) 25%,
-        rgba(200, 200, 200, 0.04) 50%,
-        rgba(150, 150, 150, 0.06) 75%,
-        rgba(100, 100, 100, 0.1) 100%);
+        rgba(200, 230, 250, 0.45) 0%,
+        rgba(180, 220, 245, 0.38) 25%,
+        rgba(160, 210, 240, 0.32) 50%,
+        rgba(140, 200, 235, 0.36) 75%,
+        rgba(120, 190, 230, 0.42) 100%);
     clip-path: polygon(
-        50% 0%, 48% 15%, 45% 25%,
-        40% 40%, 35% 55%, 30% 70%, 25% 85%,
-        20% 100%, 80% 100%,
-        75% 85%, 70% 70%, 65% 55%, 60% 40%,
-        55% 25%, 52% 15%
+        50% 0%, 48% 6%, 45% 12%, 40% 20%, 35% 29%,
+        29% 38%, 24% 47%, 20% 56%, 18% 65%,
+        17% 74%, 18% 82%, 20% 90%, 22% 95%,
+        25% 100%, 75% 100%,
+        78% 95%, 80% 90%, 82% 82%, 83% 74%,
+        82% 65%, 80% 56%, 76% 47%, 71% 38%,
+        65% 29%, 60% 20%, 55% 12%, 52% 6%
     );
     overflow: hidden;
     box-shadow:
-        inset -1px -1px 6px rgba(255, 255, 255, 0.3),
-        inset 1px 1px 6px rgba(0, 0, 0, 0.15),
-        0 -2px 10px rgba(0, 0, 0, 0.25);
+        inset -1.5px -1.5px 8px rgba(255, 255, 255, 0.5),
+        inset 1.5px 1.5px 8px rgba(0, 0, 0, 0.25),
+        inset -3px 0 6px rgba(120, 190, 230, 0.3),
+        inset 3px 0 6px rgba(200, 240, 255, 0.2),
+        0 -2px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* ミニ上部のガラスの輝き */
@@ -1483,7 +1534,7 @@ body {
 /* ミニ極細の首部分 */
 .mini-glass-throat {
     width: 3px;
-    height: 10px;
+    height: 8px;
     margin: 0 auto;
     position: relative;
     background: transparent;
@@ -1643,21 +1694,25 @@ body {
 
 .mini-upper-content {
     clip-path: polygon(
-        22% 0%, 78% 0%,
-        74% 15%, 69% 30%, 64% 45%, 59% 60%,
-        54% 75%, 51% 85%, 50% 100%,
-        49% 85%, 46% 75%,
-        41% 60%, 36% 45%, 31% 30%, 26% 15%
+        30% 3%, 70% 3%,
+        72% 8%, 74% 13%, 76% 20%, 77% 28%,
+        76% 37%, 74% 46%, 70% 55%, 65% 64%,
+        59% 73%, 54% 82%, 51% 90%, 50% 97%, 50% 100%,
+        50% 97%, 49% 90%, 46% 82%, 41% 73%,
+        35% 64%, 30% 55%, 26% 46%, 24% 37%,
+        23% 28%, 24% 20%, 26% 13%, 28% 8%
     );
 }
 
 .mini-lower-content {
     clip-path: polygon(
-        50% 0%, 49% 15%, 46% 25%,
-        41% 40%, 36% 55%, 31% 70%, 26% 85%,
-        22% 100%, 78% 100%,
-        74% 85%, 69% 70%, 64% 55%, 59% 40%,
-        54% 25%, 51% 15%
+        50% 0%, 50% 3%, 49% 10%, 46% 18%, 41% 27%,
+        35% 36%, 30% 45%, 26% 54%, 24% 63%,
+        23% 72%, 24% 80%, 26% 87%, 28% 92%,
+        30% 97%, 70% 97%,
+        72% 92%, 74% 87%, 76% 80%, 77% 72%,
+        76% 63%, 74% 54%, 70% 45%, 65% 36%,
+        59% 27%, 54% 18%, 51% 10%, 50% 3%
     );
 }
 
@@ -1830,33 +1885,74 @@ body {
     font-size: 11px;
 }
 
-.current-task .task-info {
-    color: #d0d0d0;
-    margin-bottom: 6px;
-    font-weight: 500;
-    font-size: 11px;
-}
-
-.current-task .task-timer {
-    color: #b0b0b0;
-    font-family: 'Courier New', 'SF Mono', 'Monaco', monospace;
-    font-size: 16px;
-    font-weight: 500;
-}
-
-.current-task button {
-    margin-top: 6px;
-    padding: 5px 12px;
-    background: #4a3a3a;
-    color: #c0c0c0;
-    border: 1px solid #5a4a4a;
-    cursor: pointer;
+/* 記録中の業務 - 1行表示 */
+.current-task-compact {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #2a3a2a;
+    border: 1px solid #3a4a3a;
+    padding: 6px 10px;
+    margin-bottom: 8px;
     font-size: 10px;
+}
+
+.current-task-label {
+    color: #90c090;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.current-task-name {
+    color: #d0d0d0;
     font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.current-task-timer {
+    color: #b0f0b0;
+    font-family: 'Courier New', 'SF Mono', 'Monaco', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+    min-width: 65px;
+}
+
+.edit-current-btn,
+.stop-task-btn {
+    padding: 3px 8px;
+    background: #3a3a3a;
+    color: #c0c0c0;
+    border: 1px solid #4a4a4a;
+    cursor: pointer;
+    font-size: 9px;
+    font-weight: 500;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.stop-task-btn {
+    background: #4a3a3a;
+    border-color: #5a4a4a;
+}
+
+.edit-current-btn:hover {
+    background: #4a4a4a;
+    color: #6ba8ff;
+    border-color: #6ba8ff;
+}
+
+.stop-task-btn:hover {
+    background: #5a4a4a;
+    color: #f0c0c0;
+    border-color: #f0a0a0;
 }
 
 .record-list {
-    max-height: 200px;
+    max-height: 150px;
     overflow-y: auto;
 }
 
@@ -2015,6 +2111,50 @@ body {
     border-color: #4a4a4a;
 }
 
+/* 記録履歴 - 1行表示 */
+.record-item-compact {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #232323;
+    border: 1px solid #3a3a3a;
+    padding: 4px 6px;
+    margin-bottom: 3px;
+    font-size: 9px;
+    transition: background 0.2s;
+}
+
+.record-item-compact:hover {
+    background: #2a2a2a;
+}
+
+.record-task-name {
+    color: #d0d0d0;
+    font-weight: 500;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.record-time-range {
+    color: #909090;
+    font-size: 9px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-family: 'Courier New', 'SF Mono', 'Monaco', monospace;
+}
+
+.record-duration-text {
+    color: #a8a8a8;
+    font-size: 9px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 50px;
+    text-align: right;
+}
+
 .record-item .record-task {
     color: #d0d0d0;
     font-weight: 500;
@@ -2073,6 +2213,13 @@ body {
     background: #4a4a4a;
 }
 
+/* 横並びセクション */
+.horizontal-sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
 /* 定型文セクション */
 .template-text-section {
     width: 100%;
@@ -2115,8 +2262,10 @@ body {
 
 .template-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .template-item {
@@ -2303,9 +2452,318 @@ body {
     border-color: #4a4a4a;
 }
 
+/* Excel処理セクション */
+.excel-processor-section {
+    width: 100%;
+}
+
+.excel-processor-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 300px;
+}
+
+.folder-select-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.folder-select-btn {
+    padding: 10px 20px;
+    background: #3a3a5a;
+    color: #c8c8d8;
+    border: 1px solid #4a4a6a;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.folder-select-btn:hover {
+    background: #4a4a6a;
+    color: #d8d8e8;
+    border-color: #5a5a7a;
+}
+
+.folder-path-display {
+    padding: 8px 10px;
+    background: #0a0a0a;
+    border: 1px solid #3a3a3a;
+    color: #a0a0a0;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+}
+
+.folder-path-display.selected {
+    color: #a0d0a0;
+    border-color: #3a5a3a;
+}
+
+.file-list-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #0a0a0a;
+    border: 1px solid #3a3a3a;
+    padding: 10px;
+}
+
+.file-list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+}
+
+.file-label {
+    color: #b0b0b0;
+    min-width: 80px;
+    font-weight: 500;
+}
+
+.file-name-display {
+    color: #d8d8d8;
+    font-family: 'Courier New', monospace;
+}
+
+.file-name-display.found {
+    color: #a0d0a0;
+}
+
+.file-name-display.not-found {
+    color: #d0a0a0;
+}
+
+.excel-process-btn {
+    padding: 10px 20px;
+    background: #3a4a3a;
+    color: #c8d8c8;
+    border: 1px solid #4a5a4a;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.excel-process-btn:hover {
+    background: #4a5a4a;
+    color: #d8e8d8;
+    border-color: #5a6a5a;
+}
+
+.excel-process-btn:disabled {
+    background: #2a2a2a;
+    color: #606060;
+    cursor: not-allowed;
+    border-color: #3a3a3a;
+}
+
+.excel-status {
+    padding: 8px;
+    background: #0a0a0a;
+    border: 1px solid #3a3a3a;
+    color: #c8c8c8;
+    font-size: 10px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+}
+
+.excel-status.success {
+    background: #1a2a1a;
+    border-color: #3a5a3a;
+    color: #a0d0a0;
+}
+
+.excel-status.error {
+    background: #2a1a1a;
+    border-color: #5a3a3a;
+    color: #d0a0a0;
+}
+
+.excel-status.processing {
+    background: #1a1a2a;
+    border-color: #3a3a5a;
+    color: #a0a0d0;
+}
+
+/* 業務詳細ポップアップ */
+.work-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.work-detail-modal-content {
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    min-width: 500px;
+    max-width: 700px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.work-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #3a3a3a;
+}
+
+.work-detail-header h3 {
+    color: #d8d8d8;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.close-modal-btn {
+    background: transparent;
+    border: none;
+    color: #a0a0a0;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.close-modal-btn:hover {
+    color: #e0e0e0;
+    background: #2a2a2a;
+    border-radius: 4px;
+}
+
+.work-detail-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.work-detail-summary {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #0a0a0a;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.summary-label {
+    color: #a0a0a0;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.summary-value {
+    color: #d8d8d8;
+    font-size: 18px;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+}
+
+.work-detail-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.work-detail-item {
+    background: #232323;
+    border: 1px solid #3a3a3a;
+    padding: 12px;
+    border-radius: 4px;
+}
+
+.work-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.work-item-name {
+    color: #d8d8d8;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.work-item-duration {
+    color: #a0d0a0;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+
+.work-item-time {
+    color: #a0a0a0;
+    font-size: 11px;
+}
+
+.no-data {
+    text-align: center;
+    color: #707070;
+    padding: 40px;
+    font-size: 13px;
+}
+
+.calendar-day.has-work {
+    position: relative;
+}
+
+.calendar-day.has-work::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #a0d0a0;
+    border-radius: 50%;
+}
+
 /* レスポンシブ */
 @media (max-width: 1400px) {
     .main-content {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .horizontal-sections {
+        grid-template-columns: 1fr;
+    }
+
+    .work-detail-modal-content {
+        min-width: 90%;
+        max-width: 90%;
+    }
+
+    .work-detail-summary {
+        flex-direction: column;
+        gap: 15px;
     }
 }

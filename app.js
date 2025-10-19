@@ -241,6 +241,21 @@ function updateClock() {
 // ========================================
 let calendarStartOffset = 0; // 表示開始月のオフセット
 
+// 指定日に業務記録があるかチェック
+function checkDateHasWork(year, month, day) {
+    const data = localStorage.getItem('task-records');
+    if (!data) return false;
+
+    const records = JSON.parse(data);
+    const targetDate = new Date(year, month, day);
+    const targetDateStr = targetDate.toDateString();
+
+    return records.some(record => {
+        const recordDate = new Date(record.startTime);
+        return recordDate.toDateString() === targetDateStr;
+    });
+}
+
 function renderSixMonthCalendar() {
     const container = document.getElementById('calendar-container');
     const today = new Date();
@@ -334,8 +349,13 @@ function renderSingleMonth(year, month) {
 
         if (isToday) className += ' today';
 
+        // 業務記録があるかチェック
+        const hasWork = checkDateHasWork(year, month, day);
+        if (hasWork) className += ' has-work';
+
         const title = holidayName ? `title="${holidayName}"` : '';
-        html += `<div class="${className}" ${title}>${day}</div>`;
+        const onclick = `onclick="openWorkDetailModal(${year}, ${month}, ${day})"`;
+        html += `<div class="${className}" ${title} ${onclick} style="cursor: pointer;">${day}</div>`;
     }
 
     // 次月の日付（グリッドを埋める）
@@ -494,7 +514,7 @@ function updateTaskTimer() {
     const minutes = Math.floor((elapsed % 3600) / 60);
     const seconds = elapsed % 60;
 
-    const timerElem = document.querySelector('.task-timer');
+    const timerElem = document.querySelector('.current-task-timer');
     if (timerElem) {
         timerElem.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
@@ -505,12 +525,13 @@ function renderCurrentTask() {
 
     if (currentTask) {
         container.innerHTML = `
-            <div class="task-info">
-                記録中: ${currentTask}
+            <div class="current-task-compact">
+                <span class="current-task-label">記録中:</span>
+                <span class="current-task-name">${currentTask}</span>
+                <span class="current-task-timer">00:00:00</span>
                 <button onclick="editCurrentTask()" class="edit-current-btn" title="編集">✎</button>
+                <button onclick="stopTask()" class="stop-task-btn">終了</button>
             </div>
-            <div class="task-timer">00:00:00</div>
-            <button onclick="stopTask()">終了</button>
         `;
         updateTaskTimer();
     } else {
@@ -550,14 +571,12 @@ function renderTaskRecords() {
         const duration = formatDuration(record.duration);
 
         html += `
-            <div class="record-item">
-                <div class="record-task">${record.task}</div>
-                <div class="record-time">${formatTime(start)} - ${formatTime(end)}</div>
-                <div class="record-duration">${duration}</div>
-                <div class="record-actions">
-                    <button onclick="editRecord(${index})" class="record-edit-btn" title="編集">✎</button>
-                    <button onclick="deleteRecord(${index})" class="record-delete-btn" title="削除">×</button>
-                </div>
+            <div class="record-item-compact">
+                <span class="record-task-name">${record.task}</span>
+                <span class="record-time-range">${formatTime(start)}-${formatTime(end)}</span>
+                <span class="record-duration-text">${duration}</span>
+                <button onclick="editRecord(${index})" class="record-edit-btn" title="編集">✎</button>
+                <button onclick="deleteRecord(${index})" class="record-delete-btn" title="削除">×</button>
             </div>
         `;
     });
@@ -1689,6 +1708,449 @@ function saveTemplateSettingsFromModal() {
 
 // グローバルスコープに関数を公開
 window.saveTemplateSettings = saveTemplateSettingsFromModal;
+
+// ========================================
+// Excel ファイル処理（File System Access API使用）
+// ========================================
+
+let workFolderHandle = null;
+let sourceFileHandle = null;
+let destFileHandle = null;
+
+// 作業フォルダを選択
+async function selectWorkFolder() {
+    const statusDiv = document.getElementById('excel-status');
+    const folderPathDisplay = document.getElementById('folder-path-display');
+    const processBtn = document.getElementById('process-btn');
+
+    try {
+        // フォルダ選択ダイアログを表示
+        workFolderHandle = await window.showDirectoryPicker({
+            mode: 'readwrite'
+        });
+
+        folderPathDisplay.textContent = workFolderHandle.name;
+        folderPathDisplay.className = 'folder-path-display selected';
+
+        statusDiv.textContent = 'ファイルを検索中...';
+        statusDiv.className = 'excel-status processing';
+
+        // ファイルを検索
+        await searchFilesInFolder();
+
+    } catch (error) {
+        if (error.name !== 'AbortError') {
+            console.error('フォルダ選択エラー:', error);
+            statusDiv.textContent = `エラー: ${error.message}`;
+            statusDiv.className = 'excel-status error';
+        }
+    }
+}
+
+// フォルダ内のファイルを検索
+async function searchFilesInFolder() {
+    const statusDiv = document.getElementById('excel-status');
+    const sourceFileNameDisplay = document.getElementById('source-file-name');
+    const destFileNameDisplay = document.getElementById('dest-file-name');
+    const processBtn = document.getElementById('process-btn');
+
+    sourceFileHandle = null;
+    destFileHandle = null;
+
+    try {
+        // フォルダ内のファイルを走査
+        for await (const entry of workFolderHandle.values()) {
+            if (entry.kind === 'file') {
+                // コピー元ファイルを検索（手配部品一覧_Y*.xls）
+                if (entry.name.startsWith('手配部品一覧_Y') &&
+                    (entry.name.endsWith('.xls') || entry.name.endsWith('.xlsx'))) {
+                    sourceFileHandle = entry;
+                    sourceFileNameDisplay.textContent = entry.name;
+                    sourceFileNameDisplay.className = 'file-name-display found';
+                }
+
+                // 貼り付け先ファイルを検索（手配一覧_マスタ照合用データ_*.xlsx）
+                if (entry.name.startsWith('手配一覧_マスタ照合用データ_') &&
+                    entry.name.endsWith('.xlsx')) {
+                    destFileHandle = entry;
+                    destFileNameDisplay.textContent = entry.name;
+                    destFileNameDisplay.className = 'file-name-display found';
+                }
+            }
+        }
+
+        // ファイルが見つからなかった場合の表示
+        if (!sourceFileHandle) {
+            sourceFileNameDisplay.textContent = '未検出（手配部品一覧_Y*.xls）';
+            sourceFileNameDisplay.className = 'file-name-display not-found';
+        }
+
+        if (!destFileHandle) {
+            destFileNameDisplay.textContent = '未検出（手配一覧_マスタ照合用データ_*.xlsx）';
+            destFileNameDisplay.className = 'file-name-display not-found';
+        }
+
+        // 両方のファイルが見つかった場合のみ処理ボタンを有効化
+        if (sourceFileHandle && destFileHandle) {
+            processBtn.disabled = false;
+            statusDiv.textContent = '準備完了：処理を実行できます';
+            statusDiv.className = 'excel-status success';
+        } else {
+            processBtn.disabled = true;
+            statusDiv.textContent = '必要なファイルが見つかりません';
+            statusDiv.className = 'excel-status error';
+        }
+
+    } catch (error) {
+        console.error('ファイル検索エラー:', error);
+        statusDiv.textContent = `エラー: ${error.message}`;
+        statusDiv.className = 'excel-status error';
+        processBtn.disabled = true;
+    }
+}
+
+// Excelファイル処理（自動検索版）
+async function processExcelFilesAuto() {
+    const statusDiv = document.getElementById('excel-status');
+    const processBtn = document.getElementById('process-btn');
+
+    if (!sourceFileHandle || !destFileHandle) {
+        statusDiv.textContent = 'エラー: 必要なファイルが見つかりません';
+        statusDiv.className = 'excel-status error';
+        return;
+    }
+
+    try {
+        processBtn.disabled = true;
+        statusDiv.textContent = '処理中...';
+        statusDiv.className = 'excel-status processing';
+
+        // ファイルを読み込み
+        const sourceFile = await sourceFileHandle.getFile();
+        const destFile = await destFileHandle.getFile();
+
+        // ExcelJSでファイルを読み込み
+        const ExcelJS = window.ExcelJS;
+        const sourceWorkbook = new ExcelJS.Workbook();
+        const destWorkbook = new ExcelJS.Workbook();
+
+        // コピー元ファイルの読み込み
+        const sourceArrayBuffer = await sourceFile.arrayBuffer();
+        await sourceWorkbook.xlsx.load(sourceArrayBuffer);
+        const sourceWorksheet = sourceWorkbook.worksheets[0];
+
+        // 貼り付け先ファイルの読み込み
+        const destArrayBuffer = await destFile.arrayBuffer();
+        await destWorkbook.xlsx.load(destArrayBuffer);
+        const destWorksheet = destWorkbook.getWorksheet('手配一覧添付');
+
+        if (!destWorksheet) {
+            throw new Error('貼り付け先ファイルに「手配一覧添付」シートが見つかりません');
+        }
+
+        // 「明細」セルを検索（B列）
+        let startRow = null;
+        sourceWorksheet.getColumn(2).eachCell((cell, rowNumber) => {
+            if (cell.value === '明細' && startRow === null) {
+                startRow = rowNumber + 3;
+            }
+        });
+
+        if (!startRow) {
+            throw new Error('コピー元ファイルのB列に「明細」が見つかりませんでした');
+        }
+
+        // コピー元の最終行を取得（T列基準）
+        let lastRowSource = startRow;
+        for (let i = startRow; i <= sourceWorksheet.rowCount; i++) {
+            const cell = sourceWorksheet.getCell(`T${i}`);
+            if (cell.value !== null && cell.value !== undefined && cell.value !== '') {
+                lastRowSource = i;
+            }
+        }
+
+        // 貼り付け先の既存データをクリア
+        let lastRowDest = 3;
+        for (let i = 3; i <= destWorksheet.rowCount; i++) {
+            const cell = destWorksheet.getCell(`T${i}`);
+            if (cell.value !== null && cell.value !== undefined && cell.value !== '') {
+                lastRowDest = i;
+            }
+        }
+
+        // 結合解除とクリア
+        if (lastRowDest >= 3) {
+            for (let row = 3; row <= lastRowDest; row++) {
+                for (let col = 2; col <= 20; col++) {
+                    const cell = destWorksheet.getCell(row, col);
+                    if (cell.isMerged) {
+                        destWorksheet.unMergeCells(cell.address);
+                    }
+                    cell.value = null;
+                }
+            }
+        }
+
+        // データをコピー
+        const numRows = lastRowSource - startRow + 1;
+        for (let i = 0; i < numRows; i++) {
+            const sourceRow = startRow + i;
+            const destRow = 3 + i;
+
+            for (let col = 2; col <= 20; col++) {
+                const sourceCell = sourceWorksheet.getCell(sourceRow, col);
+                const destCell = destWorksheet.getCell(destRow, col);
+                destCell.value = sourceCell.value;
+            }
+        }
+
+        // 指定列の結合処理
+        for (let i = 0; i < numRows; i++) {
+            const row = 3 + i;
+            destWorksheet.mergeCells(`C${row}:D${row}`);
+            destWorksheet.mergeCells(`E${row}:H${row}`);
+            destWorksheet.mergeCells(`I${row}:N${row}`);
+            destWorksheet.mergeCells(`Q${row}:S${row}`);
+            destWorksheet.mergeCells(`T${row}:V${row}`);
+        }
+
+        // 元のファイルに直接上書き保存
+        const buffer = await destWorkbook.xlsx.writeBuffer();
+        const writable = await destFileHandle.createWritable();
+        await writable.write(buffer);
+        await writable.close();
+
+        // コピー元ファイルを削除
+        try {
+            await workFolderHandle.removeEntry(sourceFileHandle.name);
+        } catch (deleteError) {
+            console.warn('コピー元ファイルの削除に失敗:', deleteError);
+        }
+
+        // 完了メッセージ
+        statusDiv.textContent = `処理完了: ${numRows}行のデータを処理しました。貼り付け先ファイルを更新し、コピー元ファイルを削除しました。`;
+        statusDiv.className = 'excel-status success';
+
+        // ファイルリストを再検索
+        await searchFilesInFolder();
+
+    } catch (error) {
+        console.error('Excel処理エラー:', error);
+        statusDiv.textContent = `エラー: ${error.message}`;
+        statusDiv.className = 'excel-status error';
+    } finally {
+        processBtn.disabled = false;
+    }
+}
+
+// ========================================
+// カレンダー - 業務詳細ポップアップ
+// ========================================
+
+// 業務詳細ポップアップを開く
+function openWorkDetailModal(year, month, day) {
+    const modal = document.getElementById('work-detail-modal');
+    const dateHeader = document.getElementById('work-detail-date');
+    const totalWorkTime = document.getElementById('total-work-time');
+    const workCount = document.getElementById('work-count');
+    const workDetailList = document.getElementById('work-detail-list');
+
+    // 日付を表示
+    const dateStr = `${year}年${month + 1}月${day}日`;
+    dateHeader.textContent = dateStr;
+
+    // 業務記録を取得
+    const records = JSON.parse(localStorage.getItem('task-records') || '[]');
+    const targetDate = new Date(year, month, day);
+    const targetDateStr = targetDate.toDateString();
+
+    // その日の業務を抽出
+    const dayRecords = records.filter(record => {
+        const recordDate = new Date(record.startTime);
+        return recordDate.toDateString() === targetDateStr;
+    });
+
+    if (dayRecords.length === 0) {
+        // 業務がない場合
+        totalWorkTime.textContent = '0時間0分';
+        workCount.textContent = '0件';
+        workDetailList.innerHTML = '<p class="no-data">この日の業務記録はありません</p>';
+    } else {
+        // 総作業時間を計算
+        let totalMinutes = 0;
+        dayRecords.forEach(record => {
+            const start = new Date(record.startTime);
+            const end = new Date(record.endTime);
+            const duration = (end - start) / 1000 / 60; // 分単位
+            totalMinutes += duration;
+        });
+
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = Math.floor(totalMinutes % 60);
+        totalWorkTime.textContent = `${hours}時間${minutes}分`;
+        workCount.textContent = `${dayRecords.length}件`;
+
+        // 業務リストを表示
+        let html = '';
+        dayRecords.forEach(record => {
+            const start = new Date(record.startTime);
+            const end = new Date(record.endTime);
+            const duration = (end - start) / 1000 / 60;
+            const durationHours = Math.floor(duration / 60);
+            const durationMinutes = Math.floor(duration % 60);
+
+            const startTimeStr = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
+            const endTimeStr = `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+
+            html += `
+                <div class="work-detail-item">
+                    <div class="work-item-header">
+                        <span class="work-item-name">${record.task}</span>
+                        <span class="work-item-duration">${durationHours}:${String(durationMinutes).padStart(2, '0')}</span>
+                    </div>
+                    <div class="work-item-time">${startTimeStr} - ${endTimeStr}</div>
+                </div>
+            `;
+        });
+        workDetailList.innerHTML = html;
+    }
+
+    // モーダルを表示
+    modal.style.display = 'flex';
+}
+
+// 業務詳細ポップアップを閉じる
+function closeWorkDetailModal() {
+    const modal = document.getElementById('work-detail-modal');
+    modal.style.display = 'none';
+}
+
+// モーダル外クリックで閉じる
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('work-detail-modal');
+    if (e.target === modal) {
+        closeWorkDetailModal();
+    }
+});
+
+// ========================================
+// 全設定の統合保存・読み込み機能
+// ========================================
+
+// 全設定をエクスポート
+function exportAllSettings() {
+    const allData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        settings: {
+            workTimeSettings: JSON.parse(localStorage.getItem('work-time-settings') || 'null'),
+            quickTasks: JSON.parse(localStorage.getItem('quick-tasks') || '[]'),
+            taskRecords: JSON.parse(localStorage.getItem('task-records') || '[]'),
+            templateSettings: JSON.parse(localStorage.getItem('template-settings') || 'null'),
+            inventoryMemo: localStorage.getItem('inventory-memo') || '',
+            orderList: JSON.parse(localStorage.getItem('order-list') || '[]')
+        }
+    };
+
+    const json = JSON.stringify(allData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    const today = new Date();
+    const filename = `maedatimetool_全設定_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}_${String(today.getHours()).padStart(2,'0')}${String(today.getMinutes()).padStart(2,'0')}.json`;
+
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    alert('全設定を保存しました');
+}
+
+// 全設定をインポート
+function importAllSettings() {
+    if (!confirm('全設定を読み込みますか？\n現在の設定は上書きされます。')) {
+        return;
+    }
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+
+                if (!data.settings) {
+                    alert('無効なファイル形式です');
+                    return;
+                }
+
+                // 各設定を復元
+                const settings = data.settings;
+
+                if (settings.workTimeSettings) {
+                    localStorage.setItem('work-time-settings', JSON.stringify(settings.workTimeSettings));
+                    loadWorkTimeSettings();
+                }
+
+                if (settings.quickTasks) {
+                    localStorage.setItem('quick-tasks', JSON.stringify(settings.quickTasks));
+                    renderQuickTaskButtons();
+                }
+
+                if (settings.taskRecords) {
+                    localStorage.setItem('task-records', JSON.stringify(settings.taskRecords));
+                    renderTaskRecords();
+                }
+
+                if (settings.templateSettings) {
+                    localStorage.setItem('template-settings', JSON.stringify(settings.templateSettings));
+                    renderTemplateList();
+                }
+
+                if (settings.inventoryMemo !== undefined) {
+                    localStorage.setItem('inventory-memo', settings.inventoryMemo);
+                }
+
+                if (settings.orderList) {
+                    localStorage.setItem('order-list', JSON.stringify(settings.orderList));
+                }
+
+                // カレンダーを再描画（業務記録の反映）
+                renderSixMonthCalendar();
+
+                alert('全設定を読み込みました');
+            } catch (error) {
+                alert('ファイルの読み込みに失敗しました');
+                console.error(error);
+            }
+        };
+
+        reader.readAsText(file);
+    };
+
+    input.click();
+}
+
+// ========================================
+// ブラウザ終了警告
+// ========================================
+
+// ブラウザを閉じる前に警告を表示
+window.addEventListener('beforeunload', function(e) {
+    // 標準的な警告メッセージ
+    e.preventDefault();
+    e.returnValue = ''; // Chrome では空文字列を設定する必要がある
+    return ''; // 一部のブラウザ向け
+});
 
 // ページ読み込み時に初期化
 document.addEventListener('DOMContentLoaded', init);

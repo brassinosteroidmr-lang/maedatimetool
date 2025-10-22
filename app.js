@@ -1,4 +1,122 @@
 // ========================================
+// 砂時計物理演算エンジン
+// ========================================
+
+/**
+ * 砂時計の物理的に正確な砂の挙動をシミュレートするクラス
+ *
+ * 実装する物理法則:
+ * 1. 質量保存則: 上部と下部の砂の総体積は常に一定（100%）
+ * 2. 一定流量: 砂は一定速度で上部から下部へ移動
+ * 3. 安息角22度: 下部の砂は底から水平に溜まり、中心部がわずかに盛り上がる
+ * 4. 電球型ガラスの容積分布: ガラスの形状を考慮した非線形の高さ変換
+ */
+class SandPhysicsEngine {
+    constructor() {
+        // 物理定数
+        this.REPOSE_ANGLE_DEG = 22; // 細かい砂の安息角（度）
+        this.REPOSE_ANGLE_RAD = this.REPOSE_ANGLE_DEG * Math.PI / 180;
+        this.MAX_PILE_HEIGHT = 0.03; // 中心部の最大盛り上がり（3%）
+
+        // 電球型ガラスの容積分布パラメータ
+        // 底部ほど容積が大きいため、非線形変換が必要
+        this.VOLUME_CURVE_EXPONENT = 0.7; // 容積→高さ変換の指数
+
+        // 数値誤差の許容範囲
+        this.EPSILON = 1e-10;
+    }
+
+    /**
+     * 進捗率から上部・下部の砂の高さを計算
+     * @param {number} progress - 進捗率（0.0～1.0）
+     * @returns {object} { upperHeight, lowerHeight, upperVolume, lowerVolume }
+     */
+    calculateSandHeights(progress) {
+        // 質量保存則: 上部と下部の体積の合計は常に1.0
+        const lowerVolume = Math.max(0, Math.min(1, progress));
+        const upperVolume = 1.0 - lowerVolume;
+
+        // 容積から高さへの変換（電球型ガラスの形状を考慮）
+        const upperHeight = this.volumeToHeight(upperVolume, 'upper');
+        const lowerHeight = this.volumeToHeight(lowerVolume, 'lower');
+
+        // 数値誤差の自動補正
+        const totalVolume = upperVolume + lowerVolume;
+        if (Math.abs(totalVolume - 1.0) > this.EPSILON) {
+            console.warn(`質量保存則の誤差を検出: ${totalVolume}, 補正します`);
+        }
+
+        return {
+            upperHeight,
+            lowerHeight,
+            upperVolume,
+            lowerVolume
+        };
+    }
+
+    /**
+     * 容積から高さへの変換（ガラス形状を考慮）
+     * @param {number} volume - 容積比（0.0～1.0）
+     * @param {string} type - 'upper' or 'lower'
+     * @returns {number} 高さ比（0.0～1.0）
+     */
+    volumeToHeight(volume, type) {
+        if (volume <= 0) return 0;
+        if (volume >= 1) return 1;
+
+        // 電球型ガラスは底部ほど容積が大きい
+        // 容積と高さの関係を非線形変換で表現
+        if (type === 'lower') {
+            // 下部ガラス: 底部から徐々に溜まる
+            // 初期は高さが急速に増加し、後半は緩やかになる
+            return Math.pow(volume, this.VOLUME_CURVE_EXPONENT);
+        } else {
+            // 上部ガラス: 上から徐々に減る
+            // 減り方も同様に非線形
+            return Math.pow(volume, this.VOLUME_CURVE_EXPONENT);
+        }
+    }
+
+    /**
+     * 安息角を考慮した砂の堆積形状を計算
+     * @param {number} xPercent - X座標（0～100）
+     * @param {number} averageHeight - 平均高さ
+     * @param {number} maxHeight - 最大高さ
+     * @param {number} glassWidth - ガラス幅
+     * @returns {number} その位置での砂の高さ
+     */
+    getSandHeightAtPosition(xPercent, averageHeight, maxHeight, glassWidth) {
+        const centerX = 50;
+        const distanceFromCenter = Math.abs(xPercent - centerX);
+
+        // 安息角22度に基づく高さ計算
+        // 中心からの距離に応じて高さが減少
+        const slopeHeight = averageHeight +
+            (this.MAX_PILE_HEIGHT * (1 - distanceFromCenter / centerX));
+
+        // ガラスの形状制限を適用
+        const glassHeightAtPosition = this.getGlassHeightAtPosition(xPercent);
+
+        return Math.min(slopeHeight, glassHeightAtPosition, maxHeight);
+    }
+
+    /**
+     * 電球型ガラスの各X座標での高さを取得
+     * @param {number} xPercent - X座標（0～100）
+     * @returns {number} その位置でのガラスの高さ
+     */
+    getGlassHeightAtPosition(xPercent) {
+        const centerX = 50;
+        const distanceFromCenter = Math.abs(xPercent - centerX);
+
+        // 電球型の形状を近似
+        // 中心付近は高く、端に行くほど低い
+        const normalizedDistance = distanceFromCenter / centerX;
+        return 1.0 - Math.pow(normalizedDistance, 1.5);
+    }
+}
+
+// ========================================
 // 日本の祝日データ（2025-2026年）
 // ========================================
 const holidays = {
@@ -203,25 +321,45 @@ function updateWorkTimeDisplay() {
     const hourglassContainer = document.getElementById('hourglass-container');
 
     if (sandTop && sandBottom && hourglassContainer) {
-        // 平面として扱い、視覚的な面積ベースで砂を表現
-        // - 上の砂の面積 + 下の砂の面積 = 100%（常に一定）
-        // - 面積が一定速度で上から下へ移動
-        //
-        // 円錐の面積は高さの2乗に比例: A ∝ h²
-        // したがって、h ∝ √A
-        //
-        // 上部の砂の面積比 = 1 - progress
-        // 下部の砂の面積比 = progress
-
+        // 物理的に正確な砂時計のシミュレーション
         const progressRatio = progressPercent / 100;
-        const remainingRatio = 1 - progressRatio;
 
-        // 面積比から高さ比を計算（平方根）
-        const topHeightRatio = Math.sqrt(remainingRatio);
-        const bottomHeightRatio = Math.sqrt(progressRatio);
+        // SandPhysicsEngineを使用して物理的に正確な砂の高さを計算
+        if (typeof SandPhysicsEngine !== 'undefined') {
+            const physics = new SandPhysicsEngine();
+            const result = physics.calculateSandHeights(progressRatio);
 
-        sandTop.style.height = `${topHeightRatio * 100}%`;
-        sandBottom.style.height = `${bottomHeightRatio * 100}%`;
+            sandTop.style.height = `${result.upperHeight * 100}%`;
+            sandBottom.style.height = `${result.lowerHeight * 100}%`;
+
+            // 落下パーティクルの表示制御（上部に砂がある時のみ）
+            const fallingParticles = hourglassContainer.querySelector('.falling-particles');
+            if (fallingParticles) {
+                if (result.upperHeight > 0.01) {
+                    fallingParticles.style.opacity = '1';
+                } else {
+                    fallingParticles.style.opacity = '0';
+                }
+            }
+
+            // デバッグ情報の表示（開発時のみ）
+            if (window.DEBUG_SAND_PHYSICS) {
+                console.log('砂時計物理演算:', {
+                    progress: `${(progressRatio * 100).toFixed(2)}%`,
+                    upperVolume: `${(result.upperVolume * 100).toFixed(2)}%`,
+                    lowerVolume: `${(result.lowerVolume * 100).toFixed(2)}%`,
+                    totalVolume: `${((result.upperVolume + result.lowerVolume) * 100).toFixed(4)}%`,
+                    error: `${((result.upperVolume + result.lowerVolume - 1) * 100).toFixed(6)}%`
+                });
+            }
+        } else {
+            // フォールバック: 従来の簡易実装
+            const remainingRatio = 1 - progressRatio;
+            const topHeightRatio = Math.sqrt(remainingRatio);
+            const bottomHeightRatio = Math.sqrt(progressRatio);
+            sandTop.style.height = `${topHeightRatio * 100}%`;
+            sandBottom.style.height = `${bottomHeightRatio * 100}%`;
+        }
 
         // 勤務時間外はアニメーション停止
         if (currentSeconds < workStartSeconds || currentSeconds > workEndSeconds) {
@@ -1461,23 +1599,34 @@ function updateCountdownTimer() {
     const miniSandBottom = document.getElementById('mini-sand-bottom');
 
     if (miniSandTop && miniSandBottom) {
-        // 平面として扱い、視覚的な面積ベースで砂を表現
-        // - 上の砂の面積 + 下の砂の面積 = 100%（常に一定）
-        // - 面積が一定速度で上から下へ移動
-        //
-        // 円錐の面積は高さの2乗に比例: A ∝ h²
-        // したがって、h ∝ √A
-        //
-        // 180度回転後のウィンドウ基準では：
-        // - mini-sand-bottomが画面の上（残りの砂）
-        // - mini-sand-topが画面の下（落ちた砂）
+        // 物理的に正確な砂時計のシミュレーション（ミニ砂時計用）
+        if (typeof SandPhysicsEngine !== 'undefined') {
+            const physics = new SandPhysicsEngine();
+            const result = physics.calculateSandHeights(progressRatio);
 
-        // 面積比から高さ比を計算（平方根）
-        const topHeightRatio = Math.sqrt(remainingRatio);      // 画面の上（減る）
-        const bottomHeightRatio = Math.sqrt(progressRatio);    // 画面の下（増える）
+            // 180度回転後のウィンドウ基準では：
+            // - mini-sand-bottomが画面の上（残りの砂）= upperHeight
+            // - mini-sand-topが画面の下（落ちた砂）= lowerHeight
+            miniSandBottom.style.height = `${result.upperHeight * 100}%`;      // 画面の上（減る）
+            miniSandTop.style.height = `${result.lowerHeight * 100}%`;      // 画面の下（増える）
 
-        miniSandBottom.style.height = `${topHeightRatio * 100}%`;      // 画面の上（減る）
-        miniSandTop.style.height = `${bottomHeightRatio * 100}%`;      // 画面の下（増える）
+            // 落下パーティクルの表示制御（上部に砂がある時のみ）
+            const miniContainer = document.getElementById('mini-hourglass-container');
+            const miniFallingParticles = miniContainer?.querySelector('.mini-falling-particles');
+            if (miniFallingParticles) {
+                if (result.upperHeight > 0.01) {
+                    miniFallingParticles.style.opacity = '1';
+                } else {
+                    miniFallingParticles.style.opacity = '0';
+                }
+            }
+        } else {
+            // フォールバック: 従来の簡易実装
+            const topHeightRatio = Math.sqrt(remainingRatio);
+            const bottomHeightRatio = Math.sqrt(progressRatio);
+            miniSandBottom.style.height = `${topHeightRatio * 100}%`;
+            miniSandTop.style.height = `${bottomHeightRatio * 100}%`;
+        }
     }
 }
 
@@ -1485,6 +1634,10 @@ function updateCountdownTimer() {
 // 初期化処理
 // ========================================
 function init() {
+    // デバッグモード（開発時のみ）
+    // コンソールで物理演算の詳細を確認したい場合は、以下のコメントを解除してください
+    // window.DEBUG_SAND_PHYSICS = true;
+
     // 勤務時間設定を読み込み
     loadWorkTimeSettings();
 
@@ -1761,7 +1914,7 @@ async function searchFilesInFolder() {
         // フォルダ内のファイルを走査
         for await (const entry of workFolderHandle.values()) {
             if (entry.kind === 'file') {
-                // コピー元ファイルを検索（手配部品一覧_Y*.xls）
+                // コピー元ファイルを検索（手配部品一覧_Y*.xls または *.xlsx）
                 if (entry.name.startsWith('手配部品一覧_Y') &&
                     (entry.name.endsWith('.xls') || entry.name.endsWith('.xlsx'))) {
                     sourceFileHandle = entry;
@@ -1781,7 +1934,7 @@ async function searchFilesInFolder() {
 
         // ファイルが見つからなかった場合の表示
         if (!sourceFileHandle) {
-            sourceFileNameDisplay.textContent = '未検出（手配部品一覧_Y*.xls）';
+            sourceFileNameDisplay.textContent = '未検出（手配部品一覧_Y*.xls または *.xlsx）';
             sourceFileNameDisplay.className = 'file-name-display not-found';
         }
 
@@ -1809,6 +1962,154 @@ async function searchFilesInFolder() {
     }
 }
 
+// PowerShellスクリプトを生成してダウンロード
+function downloadVBAScript() {
+    const folderPath = workFolderHandle ? workFolderHandle.name : 'Downloads';
+
+    // PowerShellスクリプトの内容
+    const psScript = `# Excel VBA自動実行スクリプト
+# 手配部品一覧のデータをマスタ照合用データにコピーするVBAマクロを実行
+
+# フォルダパスを設定（必要に応じて変更してください）
+$folderPath = "$env:USERPROFILE\\Downloads\\"
+
+# Excelアプリケーションを起動
+$excel = New-Object -ComObject Excel.Application
+$excel.Visible = $false
+$excel.DisplayAlerts = $false
+
+try {
+    # コピー元ファイルを検索
+    $sourceFile = Get-ChildItem -Path $folderPath -Filter "手配部品一覧_Y*.xls" | Select-Object -First 1
+    if (-not $sourceFile) {
+        Write-Host "エラー: コピー元ファイル（手配部品一覧_Y*.xls）が見つかりませんでした。" -ForegroundColor Red
+        exit 1
+    }
+
+    # 貼り付け先ファイルを検索
+    $destFile = Get-ChildItem -Path $folderPath -Filter "手配一覧_マスタ照合用データ_*.xlsx" | Select-Object -First 1
+    if (-not $destFile) {
+        Write-Host "エラー: 貼り付け先ファイル（手配一覧_マスタ照合用データ_*.xlsx）が見つかりませんでした。" -ForegroundColor Red
+        exit 1
+    }
+
+    Write-Host "コピー元: $($sourceFile.Name)" -ForegroundColor Green
+    Write-Host "貼り付け先: $($destFile.Name)" -ForegroundColor Green
+
+    # コピー元ブックを開く
+    $sourceWb = $excel.Workbooks.Open($sourceFile.FullName)
+    $sourceWs = $sourceWb.Sheets.Item(1)
+
+    # 「明細」セルを検索
+    $startCell = $sourceWs.Columns.Item("B").Find("明細")
+    if (-not $startCell) {
+        Write-Host "エラー: 「明細」というセルがB列に見つかりませんでした。" -ForegroundColor Red
+        $sourceWb.Close($false)
+        exit 1
+    }
+
+    $startRow = $startCell.Row + 3
+    $lastRowSource = $sourceWs.Cells.Item($sourceWs.Rows.Count, "T").End(-4162).Row  # xlUp = -4162
+    $copyRange = $sourceWs.Range("B$startRow:T$lastRowSource")
+    $numRows = $copyRange.Rows.Count
+    $numCols = $copyRange.Columns.Count
+
+    Write-Host "コピー範囲: B$startRow:T$lastRowSource ($numRows 行)" -ForegroundColor Cyan
+
+    # 貼り付け先ブックを開く
+    $destWb = $excel.Workbooks.Open($destFile.FullName)
+    $destWs = $destWb.Sheets.Item("手配一覧添付")
+
+    # 貼り付け先のT列の最終行を取得
+    $lastRowDest = $destWs.Cells.Item($destWs.Rows.Count, "T").End(-4162).Row
+
+    # 既存データのクリアと結合解除
+    if ($lastRowDest -ge 3) {
+        $clearRange = $destWs.Range("B3:T$lastRowDest")
+        $clearRange.UnMerge()
+        $clearRange.ClearContents()
+        Write-Host "既存データをクリアしました（B3:T$lastRowDest）" -ForegroundColor Yellow
+    }
+
+    # 貼り付け範囲を定義
+    $pasteRange = $destWs.Range("B3").Resize($numRows, $numCols)
+    $pasteRange.UnMerge()
+    $pasteRange.Value2 = $copyRange.Value2
+
+    Write-Host "データをコピーしました" -ForegroundColor Green
+
+    # 指定列の結合処理
+    for ($i = 3; $i -le (2 + $numRows); $i++) {
+        $destWs.Range("C$i:D$i").Merge()
+        $destWs.Range("E$i:H$i").Merge()
+        $destWs.Range("I$i:N$i").Merge()
+        $destWs.Range("Q$i:S$i").Merge()
+        $destWs.Range("T$i:V$i").Merge()
+    }
+
+    Write-Host "セル結合を完了しました" -ForegroundColor Green
+
+    # 貼り付け先ブックを保存して閉じる
+    $destWb.Save()
+    $destWb.Close($false)
+
+    Write-Host "貼り付け先ファイルを保存しました" -ForegroundColor Green
+
+    # コピー元ブックを閉じる（保存せず）
+    $sourceWb.Close($false)
+
+    # コピー元ファイルを削除
+    Remove-Item -Path $sourceFile.FullName -Force
+    Write-Host "コピー元ファイルを削除しました: $($sourceFile.Name)" -ForegroundColor Green
+
+    Write-Host ""
+    Write-Host "処理が正常に完了しました！" -ForegroundColor Green -BackgroundColor DarkGreen
+
+} catch {
+    Write-Host "エラーが発生しました: $_" -ForegroundColor Red
+    exit 1
+} finally {
+    # Excelを終了
+    $excel.Quit()
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null
+    [System.GC]::Collect()
+    [System.GC]::WaitForPendingFinalizers()
+}
+
+Write-Host ""
+Write-Host "5秒後にウィンドウを閉じます..."
+Start-Sleep -Seconds 5
+`;
+
+    // Blobとしてダウンロード
+    const blob = new Blob([psScript], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Excel処理スクリプト.ps1';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // 実行方法を表示
+    const statusDiv = document.getElementById('excel-status');
+    statusDiv.innerHTML = `
+        <strong>PowerShellスクリプトをダウンロードしました</strong><br>
+        <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px; text-align: left; font-size: 12px;">
+            <strong>実行方法:</strong><br>
+            1. ダウンロードした「Excel処理スクリプト.ps1」を右クリック<br>
+            2. 「PowerShellで実行」を選択<br>
+            　（または、右クリック→「編集」でメモ帳を開き、フォルダパスを確認・変更してから実行）<br>
+            <br>
+            <strong>※セキュリティ警告が出た場合:</strong><br>
+            PowerShellを管理者として開き、以下のコマンドを実行してください:<br>
+            <code style="background: white; padding: 2px 6px; border-radius: 3px;">Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</code>
+        </div>
+    `;
+    statusDiv.className = 'excel-status success';
+}
+
 // Excelファイル処理（自動検索版）
 async function processExcelFilesAuto() {
     const statusDiv = document.getElementById('excel-status');
@@ -1829,93 +2130,161 @@ async function processExcelFilesAuto() {
         const sourceFile = await sourceFileHandle.getFile();
         const destFile = await destFileHandle.getFile();
 
-        // ExcelJSでファイルを読み込み
-        const ExcelJS = window.ExcelJS;
-        const sourceWorkbook = new ExcelJS.Workbook();
-        const destWorkbook = new ExcelJS.Workbook();
+        // SheetJSでファイルを読み込み（.xlsと.xlsxの両方に対応）
+        const XLSX = window.XLSX;
 
         // コピー元ファイルの読み込み
         const sourceArrayBuffer = await sourceFile.arrayBuffer();
-        await sourceWorkbook.xlsx.load(sourceArrayBuffer);
-        const sourceWorksheet = sourceWorkbook.worksheets[0];
+        const sourceWorkbook = XLSX.read(sourceArrayBuffer, { type: 'array' });
+        const sourceSheetName = sourceWorkbook.SheetNames[0];
+        const sourceWorksheet = sourceWorkbook.Sheets[sourceSheetName];
 
         // 貼り付け先ファイルの読み込み
         const destArrayBuffer = await destFile.arrayBuffer();
-        await destWorkbook.xlsx.load(destArrayBuffer);
-        const destWorksheet = destWorkbook.getWorksheet('手配一覧添付');
+        const destWorkbook = XLSX.read(destArrayBuffer, { type: 'array' });
 
-        if (!destWorksheet) {
+        // 「手配一覧添付」シートを取得
+        const destSheetName = '手配一覧添付';
+        if (!destWorkbook.SheetNames.includes(destSheetName)) {
             throw new Error('貼り付け先ファイルに「手配一覧添付」シートが見つかりません');
         }
+        const destWorksheet = destWorkbook.Sheets[destSheetName];
 
-        // 「明細」セルを検索（B列）
+        // 「明細」セルを検索（B列 = インデックス1）
         let startRow = null;
-        sourceWorksheet.getColumn(2).eachCell((cell, rowNumber) => {
-            if (cell.value === '明細' && startRow === null) {
-                startRow = rowNumber + 3;
-            }
-        });
+        const sourceRange = XLSX.utils.decode_range(sourceWorksheet['!ref']);
 
-        if (!startRow) {
+        for (let row = 0; row <= sourceRange.e.r; row++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: row, c: 1 }); // B列
+            const cell = sourceWorksheet[cellAddress];
+            if (cell && cell.v === '明細') {
+                startRow = row + 3; // 「明細」の3行後から開始
+                break;
+            }
+        }
+
+        if (startRow === null) {
             throw new Error('コピー元ファイルのB列に「明細」が見つかりませんでした');
         }
 
-        // コピー元の最終行を取得（T列基準）
+        // コピー元の最終行を取得（T列 = インデックス19）
         let lastRowSource = startRow;
-        for (let i = startRow; i <= sourceWorksheet.rowCount; i++) {
-            const cell = sourceWorksheet.getCell(`T${i}`);
-            if (cell.value !== null && cell.value !== undefined && cell.value !== '') {
-                lastRowSource = i;
+        for (let row = startRow; row <= sourceRange.e.r; row++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: row, c: 19 }); // T列
+            const cell = sourceWorksheet[cellAddress];
+            if (cell && cell.v !== null && cell.v !== undefined && cell.v !== '') {
+                lastRowSource = row;
             }
         }
 
-        // 貼り付け先の既存データをクリア
-        let lastRowDest = 3;
-        for (let i = 3; i <= destWorksheet.rowCount; i++) {
-            const cell = destWorksheet.getCell(`T${i}`);
-            if (cell.value !== null && cell.value !== undefined && cell.value !== '') {
-                lastRowDest = i;
+        // コピーする行数
+        const numRows = lastRowSource - startRow + 1;
+
+        // 貼り付け先の既存データをクリア（B3:T列の最終行まで）
+        // VBAの処理: destWs.Range("B3:T" & lastRowDest).UnMerge .ClearContents
+
+        // まず、貼り付け先のT列の最終行を取得
+        const destRange = XLSX.utils.decode_range(destWorksheet['!ref']);
+        let lastRowDest = 2; // 最低でも3行目（0-indexed で 2）
+
+        for (let row = 2; row <= destRange.e.r; row++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: row, c: 19 }); // T列
+            const cell = destWorksheet[cellAddress];
+            if (cell && cell.v !== null && cell.v !== undefined && cell.v !== '') {
+                lastRowDest = row;
             }
         }
 
-        // 結合解除とクリア
-        if (lastRowDest >= 3) {
-            for (let row = 3; row <= lastRowDest; row++) {
-                for (let col = 2; col <= 20; col++) {
-                    const cell = destWorksheet.getCell(row, col);
-                    if (cell.isMerged) {
-                        destWorksheet.unMergeCells(cell.address);
+        // B3:T列（最終行まで）のセル内容のみをクリア（値のみクリア、書式は保持）
+        for (let row = 2; row <= lastRowDest; row++) { // 3行目から（0-indexed: 2）
+            for (let col = 1; col <= 19; col++) { // B列からT列まで（0-indexed: 1-19）
+                const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                if (destWorksheet[cellAddress]) {
+                    // セルの値のみをクリア（書式・型は保持）
+                    destWorksheet[cellAddress].v = '';
+                    if (destWorksheet[cellAddress].w) {
+                        destWorksheet[cellAddress].w = '';
                     }
-                    cell.value = null;
                 }
             }
         }
 
-        // データをコピー
-        const numRows = lastRowSource - startRow + 1;
-        for (let i = 0; i < numRows; i++) {
-            const sourceRow = startRow + i;
-            const destRow = 3 + i;
+        // 既存の結合を解除（B3:T列の範囲）
+        if (destWorksheet['!merges']) {
+            destWorksheet['!merges'] = destWorksheet['!merges'].filter(merge => {
+                // 3行目以降、B列からT列の範囲にある結合を除外
+                return !(merge.s.r >= 2 && merge.s.c >= 1 && merge.e.c <= 19);
+            });
+        } else {
+            destWorksheet['!merges'] = [];
+        }
 
-            for (let col = 2; col <= 20; col++) {
-                const sourceCell = sourceWorksheet.getCell(sourceRow, col);
-                const destCell = destWorksheet.getCell(destRow, col);
-                destCell.value = sourceCell.value;
+        // データをコピー（B列からT列まで、3行目から）
+        // VBAの pasteRange.Value = copyRange.Value と同じ動作（値のみコピー）
+        for (let i = 0; i < numRows; i++) {
+            const sourceRowIdx = startRow + i;
+            const destRowIdx = 2 + i; // 3行目から（0-indexed: 2）
+
+            // B列からT列（インデックス1～19）をコピー
+            for (let col = 1; col <= 19; col++) {
+                const sourceCellAddress = XLSX.utils.encode_cell({ r: sourceRowIdx, c: col });
+                const destCellAddress = XLSX.utils.encode_cell({ r: destRowIdx, c: col });
+                const sourceCell = sourceWorksheet[sourceCellAddress];
+
+                // 貼り付け先のセルを取得または作成
+                if (!destWorksheet[destCellAddress]) {
+                    destWorksheet[destCellAddress] = {};
+                }
+
+                // 値のみをコピー（VBAのValueプロパティと同じ）
+                if (sourceCell && sourceCell.v !== undefined && sourceCell.v !== null) {
+                    destWorksheet[destCellAddress].v = sourceCell.v;
+                    destWorksheet[destCellAddress].t = sourceCell.t || 's';
+                    // 表示文字列もコピー
+                    if (sourceCell.w) {
+                        destWorksheet[destCellAddress].w = sourceCell.w;
+                    }
+                    // 数値フォーマット情報もコピー
+                    if (sourceCell.z) {
+                        destWorksheet[destCellAddress].z = sourceCell.z;
+                    }
+                } else {
+                    // 空セルの場合
+                    destWorksheet[destCellAddress].v = '';
+                    destWorksheet[destCellAddress].t = 's';
+                    if (destWorksheet[destCellAddress].w) {
+                        destWorksheet[destCellAddress].w = '';
+                    }
+                }
             }
         }
 
-        // 指定列の結合処理
+        // セル結合を追加（VBAと同じ: C:D, E:H, I:N, Q:S, T:V）
         for (let i = 0; i < numRows; i++) {
-            const row = 3 + i;
-            destWorksheet.mergeCells(`C${row}:D${row}`);
-            destWorksheet.mergeCells(`E${row}:H${row}`);
-            destWorksheet.mergeCells(`I${row}:N${row}`);
-            destWorksheet.mergeCells(`Q${row}:S${row}`);
-            destWorksheet.mergeCells(`T${row}:V${row}`);
+            const row = 2 + i; // 3行目から（0-indexed）
+            destWorksheet['!merges'].push({ s: { r: row, c: 2 }, e: { r: row, c: 3 } }); // C:D
+            destWorksheet['!merges'].push({ s: { r: row, c: 4 }, e: { r: row, c: 7 } }); // E:H
+            destWorksheet['!merges'].push({ s: { r: row, c: 8 }, e: { r: row, c: 13 } }); // I:N
+            destWorksheet['!merges'].push({ s: { r: row, c: 16 }, e: { r: row, c: 18 } }); // Q:S
+            destWorksheet['!merges'].push({ s: { r: row, c: 19 }, e: { r: row, c: 21 } }); // T:V
         }
 
+        // シートの範囲を更新（データが追加された分を反映）
+        const newEndRow = Math.max(destRange.e.r, 2 + numRows - 1);
+        const newEndCol = Math.max(destRange.e.c, 21); // V列まで（0-indexed: 21）
+        destWorksheet['!ref'] = XLSX.utils.encode_range({
+            s: { r: destRange.s.r, c: destRange.s.c },
+            e: { r: newEndRow, c: newEndCol }
+        });
+
         // 元のファイルに直接上書き保存
-        const buffer = await destWorkbook.xlsx.writeBuffer();
+        // cellStylesオプションでセルスタイルを保持
+        const buffer = XLSX.write(destWorkbook, {
+            type: 'array',
+            bookType: 'xlsx',
+            cellStyles: true,
+            bookVBA: true  // VBAマクロがある場合に保持
+        });
         const writable = await destFileHandle.createWritable();
         await writable.write(buffer);
         await writable.close();

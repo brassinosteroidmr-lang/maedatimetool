@@ -2787,7 +2787,7 @@ function nextPeriod() {
 // グラフを描画（3ヶ月表示）
 function renderChart(warehouse) {
     const aggregated = aggregateDataByWarehouse(warehouse);
-    const capacity = warehouseCapacities[warehouse] || 60;
+    const capacity = warehouse in warehouseCapacities ? warehouseCapacities[warehouse] : 60;
 
     // 表示期間を計算（今日から3ヶ月分 + オフセット）
     const today = new Date();

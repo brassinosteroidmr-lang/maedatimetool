@@ -236,6 +236,24 @@ body {
     color: #d0d0f0;
 }
 
+.help-btn {
+    background: #3a3a4a;
+    border: 1px solid #4a4a5a;
+    color: #c8c8d8;
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s;
+    font-weight: 600;
+}
+
+.help-btn:hover {
+    background: #4a4a5a;
+    color: #d8d8e8;
+}
+
 .clear-btn {
     background: #4a3a3a;
     border-color: #5a4a4a;

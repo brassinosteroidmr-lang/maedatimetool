@@ -2417,7 +2417,8 @@ function exportAllSettings() {
             taskRecords: JSON.parse(localStorage.getItem('task-records') || '[]'),
             templateSettings: JSON.parse(localStorage.getItem('template-settings') || 'null'),
             inventoryMemo: localStorage.getItem('inventory-memo') || '',
-            orderList: JSON.parse(localStorage.getItem('order-list') || '[]')
+            orderList: JSON.parse(localStorage.getItem('order-list') || '[]'),
+            warehouseCapacities: JSON.parse(localStorage.getItem('warehouse-capacities') || '{}')
         }
     };
 
@@ -2491,6 +2492,16 @@ function importAllSettings() {
 
                 if (settings.orderList) {
                     localStorage.setItem('order-list', JSON.stringify(settings.orderList));
+                }
+
+                if (settings.warehouseCapacities) {
+                    localStorage.setItem('warehouse-capacities', JSON.stringify(settings.warehouseCapacities));
+                    // グローバル変数も更新
+                    warehouseCapacities = settings.warehouseCapacities;
+                    // グラフが表示されている場合は再描画
+                    if (currentWarehouse) {
+                        renderChart(currentWarehouse);
+                    }
                 }
 
                 // カレンダーを再描画（業務記録の反映）

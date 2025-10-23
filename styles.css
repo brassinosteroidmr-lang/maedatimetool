@@ -90,12 +90,7 @@ body {
     justify-content: space-between;
     align-items: center;
     gap: 15px;
-}
-
-.clock-display {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
+    margin-bottom: 5px;
 }
 
 /* 砂時計を並べるエリア */
@@ -108,7 +103,7 @@ body {
 /* 全設定管理ボタン */
 .settings-management {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     align-items: center;
 }
 
@@ -210,8 +205,8 @@ body {
     background: #3a4a3a;
     border-color: #4a5a4a;
     font-weight: 600;
-    padding: 6px 10px;
-    font-size: 16px;
+    padding: 5px 10px;
+    font-size: 11px;
     border-radius: 4px;
 }
 
@@ -224,8 +219,8 @@ body {
     background: #3a3a4a;
     border-color: #4a4a5a;
     font-weight: 600;
-    padding: 6px 10px;
-    font-size: 16px;
+    padding: 5px 10px;
+    font-size: 11px;
     border-radius: 4px;
 }
 

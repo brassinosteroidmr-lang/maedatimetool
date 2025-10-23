@@ -198,29 +198,40 @@
                         </div>
                     </section>
 
-                    <!-- Excel処理セクション -->
+                    <!-- 出荷データ可視化セクション -->
                     <section class="template-section">
-                        <div class="excel-processor-section">
+                        <div class="shipment-chart-section">
                             <div class="template-header">
-                                <h3>Excelファイル処理</h3>
+                                <h3>出荷データ可視化</h3>
                             </div>
-                            <div class="excel-processor-content">
-                                <div class="folder-select-group">
-                                    <button onclick="selectWorkFolder()" class="folder-select-btn">作業フォルダを選択</button>
-                                    <div id="folder-path-display" class="folder-path-display">フォルダが選択されていません</div>
+                            <div class="shipment-chart-content">
+                                <!-- CSVファイル選択 -->
+                                <div class="csv-select-group">
+                                    <label class="csv-label">CSVファイルパス:</label>
+                                    <input type="text" id="csv-path-input" class="csv-path-input"
+                                           value="N:\業務本部\資材課\0-00_総合\ダッシュボード\出荷指示明細リスト.csv" readonly>
+                                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;" onchange="handleCSVFileSelect(event)">
+                                    <button onclick="document.getElementById('csv-file-input').click()" class="csv-select-btn">📁 ファイル選択</button>
+                                    <button onclick="loadShipmentData()" class="csv-load-btn">📊 データ読込</button>
                                 </div>
-                                <div class="file-list-group">
-                                    <div class="file-list-item">
-                                        <span class="file-label">コピー元:</span>
-                                        <span id="source-file-name" class="file-name-display">未検出</span>
-                                    </div>
-                                    <div class="file-list-item">
-                                        <span class="file-label">貼り付け先:</span>
-                                        <span id="dest-file-name" class="file-name-display">未検出</span>
-                                    </div>
+
+                                <!-- キャパシティ設定 -->
+                                <div class="capacity-settings" id="capacity-settings" style="display: none;">
+                                    <label class="capacity-label">⚙️ 倉庫別キャパシティ設定:</label>
+                                    <div class="capacity-inputs" id="capacity-inputs"></div>
+                                    <button onclick="saveCapacitySettings()" class="capacity-save-btn">💾 設定保存</button>
                                 </div>
-                                <button onclick="processExcelFilesAuto()" class="excel-process-btn" id="process-btn" disabled>処理実行して保存</button>
-                                <div id="excel-status" class="excel-status"></div>
+
+                                <!-- ステータス表示 -->
+                                <div id="shipment-status" class="shipment-status"></div>
+
+                                <!-- タブ切り替え -->
+                                <div class="warehouse-tabs" id="warehouse-tabs" style="display: none;"></div>
+
+                                <!-- グラフエリア -->
+                                <div class="chart-container" id="chart-container" style="display: none;">
+                                    <canvas id="shipment-chart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -282,7 +293,12 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <!-- SheetJSライブラリ (.xls/.xlsx両対応) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <!-- Chart.jsライブラリ (グラフ描画用) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- PapaParse (CSV解析用) -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

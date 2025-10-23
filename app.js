@@ -2510,6 +2510,332 @@ function importAllSettings() {
 }
 
 // ========================================
+// 出荷データ可視化機能
+// ========================================
+
+// グローバル変数
+let shipmentData = null; // 読み込んだCSVデータ
+let shipmentChart = null; // Chart.jsインスタンス
+let currentWarehouse = null; // 現在表示中の倉庫
+let warehouseCapacities = {}; // 倉庫別キャパシティ設定
+
+// CSVファイル選択ハンドラ
+function handleCSVFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const pathInput = document.getElementById('csv-path-input');
+        pathInput.value = file.name;
+
+        // ファイルを読み込む
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            parseCSVData(e.target.result);
+        };
+        reader.readAsText(file, 'Shift_JIS'); // 日本語CSVはShift_JISが多い
+    }
+}
+
+// データ読込ボタンのハンドラ
+function loadShipmentData() {
+    const fileInput = document.getElementById('csv-file-input');
+    if (fileInput.files.length === 0) {
+        showShipmentStatus('ファイルを選択してください', 'error');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        parseCSVData(e.target.result);
+    };
+    reader.readAsText(file, 'Shift_JIS');
+}
+
+// CSV データを解析
+function parseCSVData(csvText) {
+    try {
+        showShipmentStatus('データを解析中...', 'info');
+
+        // PapaParseでCSVを解析
+        Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                shipmentData = results.data;
+                processShipmentData();
+            },
+            error: function(error) {
+                showShipmentStatus(`CSVの解析に失敗しました: ${error.message}`, 'error');
+            }
+        });
+    } catch (error) {
+        showShipmentStatus(`エラー: ${error.message}`, 'error');
+    }
+}
+
+// データを集計・成形
+function processShipmentData() {
+    try {
+        if (!shipmentData || shipmentData.length === 0) {
+            showShipmentStatus('データが空です', 'error');
+            return;
+        }
+
+        showShipmentStatus('データを集計中...', 'info');
+
+        // 倉庫名のリストを取得
+        const warehouses = [...new Set(shipmentData.map(row => row['倉庫名']).filter(w => w))];
+
+        if (warehouses.length === 0) {
+            showShipmentStatus('倉庫名が見つかりません', 'error');
+            return;
+        }
+
+        // キャパシティ設定をロード
+        loadCapacitySettings(warehouses);
+
+        // キャパシティ設定UIを表示
+        renderCapacitySettings(warehouses);
+
+        // タブを生成
+        renderWarehouseTabs(warehouses);
+
+        // 最初の倉庫を表示
+        currentWarehouse = warehouses[0];
+        renderChart(currentWarehouse);
+
+        showShipmentStatus(`データ読込完了 (${shipmentData.length}行)`, 'success');
+
+    } catch (error) {
+        showShipmentStatus(`エラー: ${error.message}`, 'error');
+        console.error('データ処理エラー:', error);
+    }
+}
+
+// 倉庫別にデータを集計
+function aggregateDataByWarehouse(warehouse) {
+    // 指定倉庫のデータをフィルター
+    const warehouseData = shipmentData.filter(row => row['倉庫名'] === warehouse);
+
+    // 出荷希望日でグループ化して集計
+    const grouped = {};
+
+    warehouseData.forEach(row => {
+        const date = row['出荷希望日'];
+        if (!date) return;
+
+        if (!grouped[date]) {
+            grouped[date] = {
+                date: date,
+                rowCount: 0,
+                rows: []
+            };
+        }
+
+        grouped[date].rowCount++;
+        grouped[date].rows.push(row);
+    });
+
+    // 日付順にソート
+    const sorted = Object.values(grouped).sort((a, b) => {
+        return new Date(a.date) - new Date(b.date);
+    });
+
+    return sorted;
+}
+
+// キャパシティ設定UIを表示
+function renderCapacitySettings(warehouses) {
+    const settingsDiv = document.getElementById('capacity-settings');
+    const inputsDiv = document.getElementById('capacity-inputs');
+
+    inputsDiv.innerHTML = '';
+
+    warehouses.forEach(warehouse => {
+        const capacity = warehouseCapacities[warehouse] || 60;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'capacity-input-wrapper';
+
+        const label = document.createElement('label');
+        label.textContent = `${warehouse}:`;
+        label.className = 'capacity-input-label';
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.id = `capacity-${warehouse}`;
+        input.value = capacity;
+        input.min = 0;
+        input.className = 'capacity-input';
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(input);
+        inputsDiv.appendChild(wrapper);
+    });
+
+    settingsDiv.style.display = 'block';
+}
+
+// キャパシティ設定を保存
+function saveCapacitySettings() {
+    const inputs = document.querySelectorAll('.capacity-input');
+    inputs.forEach(input => {
+        const warehouse = input.id.replace('capacity-', '');
+        warehouseCapacities[warehouse] = parseInt(input.value) || 60;
+    });
+
+    // localStorageに保存
+    localStorage.setItem('warehouse-capacities', JSON.stringify(warehouseCapacities));
+
+    // グラフを再描画
+    if (currentWarehouse) {
+        renderChart(currentWarehouse);
+    }
+
+    showShipmentStatus('キャパシティ設定を保存しました', 'success');
+}
+
+// キャパシティ設定をロード
+function loadCapacitySettings(warehouses) {
+    const saved = localStorage.getItem('warehouse-capacities');
+    if (saved) {
+        warehouseCapacities = JSON.parse(saved);
+    }
+
+    // 新しい倉庫があればデフォルト値60を設定
+    warehouses.forEach(warehouse => {
+        if (!(warehouse in warehouseCapacities)) {
+            warehouseCapacities[warehouse] = 60;
+        }
+    });
+}
+
+// 倉庫タブを表示
+function renderWarehouseTabs(warehouses) {
+    const tabsDiv = document.getElementById('warehouse-tabs');
+    tabsDiv.innerHTML = '';
+
+    warehouses.forEach(warehouse => {
+        const tab = document.createElement('button');
+        tab.className = 'warehouse-tab';
+        tab.textContent = warehouse;
+        tab.onclick = () => switchWarehouse(warehouse);
+
+        if (warehouse === currentWarehouse) {
+            tab.classList.add('active');
+        }
+
+        tabsDiv.appendChild(tab);
+    });
+
+    tabsDiv.style.display = 'flex';
+}
+
+// 倉庫を切り替え
+function switchWarehouse(warehouse) {
+    currentWarehouse = warehouse;
+
+    // タブのアクティブ状態を更新
+    const tabs = document.querySelectorAll('.warehouse-tab');
+    tabs.forEach(tab => {
+        if (tab.textContent === warehouse) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+
+    // グラフを再描画
+    renderChart(warehouse);
+}
+
+// グラフを描画
+function renderChart(warehouse) {
+    const aggregated = aggregateDataByWarehouse(warehouse);
+    const capacity = warehouseCapacities[warehouse] || 60;
+
+    // 日付ラベルと数行数データを準備
+    const labels = aggregated.map(item => item.date);
+    const rowCounts = aggregated.map(item => item.rowCount);
+
+    // Chart.jsでグラフを描画
+    const ctx = document.getElementById('shipment-chart');
+
+    // 既存のグラフがあれば破棄
+    if (shipmentChart) {
+        shipmentChart.destroy();
+    }
+
+    shipmentChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: '数行数',
+                    data: rowCounts,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'キャパシティ',
+                    data: Array(labels.length).fill(capacity),
+                    type: 'line',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: `${warehouse} - 出荷データ`,
+                    font: {
+                        size: 16
+                    }
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '数量'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: '出荷希望日'
+                    }
+                }
+            }
+        }
+    });
+
+    // グラフエリアを表示
+    document.getElementById('chart-container').style.display = 'block';
+}
+
+// ステータスメッセージを表示
+function showShipmentStatus(message, type) {
+    const statusDiv = document.getElementById('shipment-status');
+    statusDiv.textContent = message;
+    statusDiv.className = `shipment-status ${type}`;
+}
+
+// ========================================
 // ブラウザ終了警告
 // ========================================
 

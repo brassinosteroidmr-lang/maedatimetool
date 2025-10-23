@@ -2807,6 +2807,204 @@ body {
     border-radius: 50%;
 }
 
+/* ========================================
+   出荷データ可視化セクション
+   ======================================== */
+
+.shipment-chart-section {
+    width: 100%;
+}
+
+.shipment-chart-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* CSVファイル選択 */
+.csv-select-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.csv-label {
+    font-size: 12px;
+    color: #c0c0c0;
+    white-space: nowrap;
+}
+
+.csv-path-input {
+    flex: 1;
+    min-width: 300px;
+    padding: 8px 12px;
+    font-size: 12px;
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    color: #d0d0d0;
+    border-radius: 4px;
+}
+
+.csv-select-btn,
+.csv-load-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+    border: 1px solid #3a3a3a;
+    background: #2a2a2a;
+    color: #d0d0d0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.csv-select-btn:hover,
+.csv-load-btn:hover {
+    background: #3a3a3a;
+    border-color: #4a4a4a;
+}
+
+.csv-load-btn {
+    background: #3a5a7a;
+    border-color: #4a6a8a;
+}
+
+.csv-load-btn:hover {
+    background: #4a6a8a;
+}
+
+/* キャパシティ設定 */
+.capacity-settings {
+    padding: 15px;
+    background: #202020;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+}
+
+.capacity-label {
+    display: block;
+    font-size: 13px;
+    color: #c0c0c0;
+    margin-bottom: 10px;
+}
+
+.capacity-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.capacity-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.capacity-input-label {
+    font-size: 12px;
+    color: #b0b0b0;
+    min-width: 80px;
+}
+
+.capacity-input {
+    width: 70px;
+    padding: 6px 10px;
+    font-size: 12px;
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    color: #d0d0d0;
+    border-radius: 4px;
+}
+
+.capacity-save-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+    border: 1px solid #3a5a3a;
+    background: #2a4a2a;
+    color: #d0d0d0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.capacity-save-btn:hover {
+    background: #3a5a3a;
+}
+
+/* ステータス表示 */
+.shipment-status {
+    padding: 10px 15px;
+    font-size: 12px;
+    border-radius: 4px;
+    border: 1px solid;
+}
+
+.shipment-status.info {
+    background: #1a2a3a;
+    border-color: #2a3a4a;
+    color: #7ac0d0;
+}
+
+.shipment-status.success {
+    background: #1a3a1a;
+    border-color: #2a4a2a;
+    color: #90d090;
+}
+
+.shipment-status.error {
+    background: #3a1a1a;
+    border-color: #4a2a2a;
+    color: #d09090;
+}
+
+/* 倉庫タブ */
+.warehouse-tabs {
+    display: flex;
+    gap: 5px;
+    border-bottom: 1px solid #3a3a3a;
+    padding-bottom: 5px;
+}
+
+.warehouse-tab {
+    padding: 8px 20px;
+    font-size: 12px;
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    border-bottom: none;
+    color: #b0b0b0;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.2s;
+}
+
+.warehouse-tab:hover {
+    background: #3a3a3a;
+    color: #d0d0d0;
+}
+
+.warehouse-tab.active {
+    background: #3a5a7a;
+    border-color: #4a6a8a;
+    color: #ffffff;
+}
+
+/* グラフコンテナ */
+.chart-container {
+    width: 100%;
+    height: 400px;
+    padding: 20px;
+    background: #202020;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+#shipment-chart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
 /* レスポンシブ */
 @media (max-width: 1400px) {
     .main-content {
@@ -2827,5 +3025,26 @@ body {
     .work-detail-summary {
         flex-direction: column;
         gap: 15px;
+    }
+
+    .csv-select-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .csv-path-input {
+        min-width: 100%;
+    }
+
+    .capacity-inputs {
+        flex-direction: column;
+    }
+
+    .warehouse-tabs {
+        flex-wrap: wrap;
+    }
+
+    .chart-container {
+        height: 300px;
     }
 }

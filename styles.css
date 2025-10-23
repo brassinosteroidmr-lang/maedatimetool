@@ -2259,6 +2259,27 @@ body {
     gap: 20px;
 }
 
+/* 左列（砂時計＋定型文） */
+.left-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0;
+}
+
+/* 砂時計セクション（2/3の高さ） */
+.hourglass-section {
+    flex: 2;
+    min-height: 0;
+    margin-bottom: 20px;
+}
+
+/* コンパクト定型文セクション（1/3の高さ） */
+.template-compact-section {
+    flex: 1;
+    min-height: 0;
+}
+
 /* 定型文セクション */
 .template-text-section {
     width: 100%;
@@ -3011,11 +3032,9 @@ body {
     text-align: center;
 }
 
-/* グラフとテーブル */
+/* グラフ */
 .chart-and-table {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
+    display: block;
     margin-top: 15px;
 }
 
@@ -3025,64 +3044,12 @@ body {
     background: #202020;
     border: 1px solid #3a3a3a;
     border-radius: 4px;
+    width: 100%;
 }
 
 #shipment-chart {
     width: 100% !important;
     height: 100% !important;
-}
-
-/* データテーブル */
-.data-table-container {
-    background: #202020;
-    border: 1px solid #3a3a3a;
-    border-radius: 4px;
-    padding: 15px;
-    max-height: 440px;
-    overflow-y: auto;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-}
-
-.data-table thead {
-    position: sticky;
-    top: 0;
-    background: #2a2a2a;
-    z-index: 1;
-}
-
-.data-table th,
-.data-table td {
-    padding: 8px;
-    text-align: right;
-    border-bottom: 1px solid #3a3a3a;
-}
-
-.data-table th {
-    color: #c0c0c0;
-    font-weight: 500;
-}
-
-.data-table td {
-    color: #b0b0b0;
-}
-
-.data-table th:first-child,
-.data-table td:first-child {
-    text-align: left;
-}
-
-.data-table tr:hover td {
-    background: #2a2a2a;
-}
-
-.data-table .over-capacity {
-    color: #ff6b6b;
-    font-weight: 600;
 }
 
 /* キャパシティ設定モーダル */
@@ -3180,10 +3147,6 @@ body {
 
     .warehouse-tabs {
         flex-wrap: wrap;
-    }
-
-    .chart-and-table {
-        grid-template-columns: 1fr;
     }
 
     .chart-container {

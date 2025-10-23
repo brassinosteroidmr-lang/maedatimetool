@@ -2900,43 +2900,6 @@ function renderChart(warehouse) {
         },
         plugins: [ChartDataLabels]
     });
-
-    // データテーブルを描画
-    renderDataTable(filtered, capacity);
-}
-
-// データテーブルを描画
-function renderDataTable(data, capacity) {
-    const table = document.getElementById('data-table');
-
-    let html = `
-        <thead>
-            <tr>
-                <th>出荷希望日</th>
-                <th>数行数</th>
-                <th>キャパシティ</th>
-                <th>差分</th>
-            </tr>
-        </thead>
-        <tbody>
-    `;
-
-    data.forEach(item => {
-        const diff = item.rowCount - capacity;
-        const diffClass = diff > 0 ? 'over-capacity' : '';
-
-        html += `
-            <tr>
-                <td>${item.date}</td>
-                <td>${item.rowCount}</td>
-                <td>${capacity}</td>
-                <td class="${diffClass}">${diff > 0 ? '+' : ''}${diff}</td>
-            </tr>
-        `;
-    });
-
-    html += '</tbody>';
-    table.innerHTML = html;
 }
 
 // ステータスメッセージを表示

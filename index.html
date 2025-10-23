@@ -10,11 +10,13 @@
     <div class="container">
         <!-- メインコンテンツエリア -->
         <div class="main-content">
-            <!-- 上段: 時計・砂時計と業務記録 -->
+            <!-- 上段: 時計・砂時計・定型文と業務記録 -->
             <div class="top-section">
                 <div class="horizontal-sections">
-                    <!-- 左側: 時計と砂時計エリア -->
-                    <section class="template-section">
+                    <!-- 左側: 時計・砂時計・定型文エリア -->
+                    <div class="left-column">
+                        <!-- 時計と砂時計エリア（2/3） -->
+                        <section class="template-section hourglass-section">
                         <div class="time-display-area">
                             <!-- 時計と日付の上部エリア -->
                             <div class="clock-info-area">
@@ -149,7 +151,19 @@
                                 <button onclick="importAllSettings()" class="import-all-btn" title="全設定をファイルから読込">📂 全設定読込</button>
                             </div>
                         </div>
-                    </section>
+                        </section>
+
+                        <!-- 定型文セクション（1/3） -->
+                        <section class="template-section template-compact-section">
+                            <div class="template-text-section">
+                                <div class="template-header">
+                                    <h3>定型文</h3>
+                                    <button onclick="openTemplateSettings()" class="template-settings-btn" title="設定">⚙</button>
+                                </div>
+                                <div id="template-list" class="template-list"></div>
+                            </div>
+                        </section>
+                    </div>
 
                     <!-- 右側: 業務記録 -->
                     <section class="template-section">
@@ -184,19 +198,6 @@
                 </div>
             </div>
 
-            <!-- 中段: 定型文 -->
-            <div class="middle-section">
-                <!-- 定型文セクション -->
-                <section class="template-section">
-                    <div class="template-text-section">
-                        <div class="template-header">
-                            <h3>定型文</h3>
-                            <button onclick="openTemplateSettings()" class="template-settings-btn" title="設定">⚙</button>
-                        </div>
-                        <div id="template-list" class="template-list"></div>
-                    </div>
-                </section>
-            </div>
 
             <!-- 出荷データ可視化セクション -->
             <div class="shipment-section">
@@ -230,13 +231,10 @@
                                 </div>
                             </div>
 
-                            <!-- グラフとデータテーブル -->
+                            <!-- グラフ -->
                             <div class="chart-and-table" id="chart-and-table" style="display: none;">
                                 <div class="chart-container" id="chart-container">
                                     <canvas id="shipment-chart"></canvas>
-                                </div>
-                                <div class="data-table-container" id="data-table-container">
-                                    <table class="data-table" id="data-table"></table>
                                 </div>
                             </div>
                         </div>

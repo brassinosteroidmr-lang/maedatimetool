@@ -44,12 +44,10 @@
                                             <input type="time" id="work-end-time" value="17:30" class="time-input">
                                             <button onclick="updateWorkTimeSettings()" class="time-save-btn">設定</button>
                                         </div>
-                                        <div class="time-info-compact">
-                                            <div id="elapsed-time">経過: 0:00</div>
-                                            <div id="remaining-time">残り: 9:00</div>
-                                        </div>
                                     </div>
-                                    <div class="hourglass-container" id="hourglass-container">
+                                    <div class="hourglass-with-time">
+                                        <div id="remaining-time" class="remaining-time-overlay">残り: 9:00</div>
+                                        <div class="hourglass-container" id="hourglass-container">
                             <div class="hourglass">
                                 <!-- 上部キャピタル（柱頭） -->
                                 <div class="column-capital top">
@@ -94,6 +92,8 @@
                                     <div class="capital-abacus"></div>
                                 </div>
                                     </div>
+                                        </div>
+                                        <div id="elapsed-time" class="elapsed-time-overlay">経過: 0:00</div>
                                     </div>
                                 </div>
 

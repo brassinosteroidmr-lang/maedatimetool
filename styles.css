@@ -94,8 +94,9 @@ body {
 
 .clock-date-group {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
 }
 
 /* 砂時計を並べるエリア */
@@ -663,15 +664,14 @@ body {
     font-family: 'Courier New', 'SF Mono', 'Monaco', monospace;
     font-weight: 600;
     letter-spacing: 2px;
-    text-align: center;
-    margin-bottom: 3px;
 }
 
 .date-display-compact {
-    font-size: 11px;
+    font-size: 24px;
     color: #a0a0a0;
-    text-align: center;
-    margin-bottom: 10px;
+    font-family: 'Courier New', 'SF Mono', 'Monaco', monospace;
+    font-weight: 600;
+    letter-spacing: 1px;
 }
 
 /* コンパクト勤務時間設定 */
@@ -704,11 +704,45 @@ body {
 }
 
 .time-info-compact {
+    display: none;
+}
+
+/* 砂時計と時間表示のラッパー */
+.hourglass-with-time {
+    position: relative;
     display: flex;
-    justify-content: space-between;
-    font-size: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 残り時間（上部ガラス左側） */
+.remaining-time-overlay {
+    position: absolute;
+    top: 25%;
+    left: -60px;
+    font-size: 11px;
     color: #b0b0b0;
-    padding: 0 5px;
+    font-weight: 500;
+    background: rgba(42, 42, 42, 0.8);
+    padding: 3px 8px;
+    border-radius: 3px;
+    border: 1px solid #4a4a4a;
+    white-space: nowrap;
+}
+
+/* 経過時間（下部ガラス左側） */
+.elapsed-time-overlay {
+    position: absolute;
+    bottom: 25%;
+    left: -60px;
+    font-size: 11px;
+    color: #b0b0b0;
+    font-weight: 500;
+    background: rgba(42, 42, 42, 0.8);
+    padding: 3px 8px;
+    border-radius: 3px;
+    border: 1px solid #4a4a4a;
+    white-space: nowrap;
 }
 
 /* 勤務時間プログレスバー */

@@ -301,6 +301,11 @@
                                 <button onclick="nextMonths()" class="nav-btn">次 ▶</button>
                             </div>
                         </div>
+                        <div class="calendar-mode-switcher">
+                            <button onclick="switchCalendarMode('work')" class="calendar-mode-btn active" id="mode-work-btn">勤務時間</button>
+                            <button onclick="switchCalendarMode('shipment')" class="calendar-mode-btn" id="mode-shipment-btn">出荷データ</button>
+                            <button onclick="switchCalendarMode('arrival')" class="calendar-mode-btn" id="mode-arrival-btn">入荷待ち</button>
+                        </div>
                         <div class="delivery-calculator">
                             <input type="date" id="calc-order-date" class="calc-input">
                             <label>LT:</label>

@@ -372,6 +372,38 @@ body {
     gap: 5px;
 }
 
+/* カレンダーモード切り替え */
+.calendar-mode-switcher {
+    display: flex;
+    gap: 5px;
+    padding: 3px;
+    background: #1a1a1a;
+    border-radius: 6px;
+}
+
+.calendar-mode-btn {
+    padding: 6px 14px;
+    border: none;
+    background: transparent;
+    color: #a0a0a0;
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.calendar-mode-btn:hover {
+    background: #2a2a2a;
+    color: #d0d0d0;
+}
+
+.calendar-mode-btn.active {
+    background: #3a3a3a;
+    color: #5a9fd4;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 .nav-btn {
     padding: 4px 10px;
     background: #3a3a3a;
@@ -2906,6 +2938,36 @@ body {
     height: 4px;
     background: #a0d0a0;
     border-radius: 50%;
+}
+
+/* カレンダーデータ表示用 */
+.calendar-day {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+.calendar-day-number {
+    font-size: 13px;
+}
+
+.calendar-data-label {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 4px;
+    background: rgba(90, 159, 212, 0.3);
+    border: 1px solid rgba(90, 159, 212, 0.5);
+    border-radius: 3px;
+    color: #5a9fd4;
+    min-width: 20px;
+    text-align: center;
+}
+
+.calendar-day.has-data {
+    background: rgba(90, 159, 212, 0.1);
 }
 
 /* ========================================

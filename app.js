@@ -378,6 +378,21 @@ function updateClock() {
 // 半年間カレンダー
 // ========================================
 let calendarStartOffset = 0; // 表示開始月のオフセット
+let calendarMode = 'work'; // カレンダー表示モード: 'work', 'shipment', 'arrival'
+
+// カレンダーモード切り替え
+function switchCalendarMode(mode) {
+    calendarMode = mode;
+
+    // ボタンのアクティブ状態を更新
+    document.querySelectorAll('.calendar-mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(`mode-${mode}-btn`).classList.add('active');
+
+    // カレンダーを再描画
+    renderSixMonthCalendar();
+}
 
 // 指定日に業務記録があるかチェック
 function checkDateHasWork(year, month, day) {
@@ -392,6 +407,71 @@ function checkDateHasWork(year, month, day) {
         const recordDate = new Date(record.startTime);
         return recordDate.toDateString() === targetDateStr;
     });
+}
+
+// 指定日の出荷データ数量を取得（選択中の倉庫のみ）
+function getShipmentQuantityForDate(year, month, day) {
+    if (!shipmentData || !currentWarehouse) return 0;
+
+    const targetDate = `${year}/${String(month + 1).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
+    let totalQuantity = 0;
+
+    shipmentData.forEach(row => {
+        const dateStr = row['出荷希望日'] || '';
+        const warehouse = row['倉庫'] || '';
+
+        // 選択中の倉庫のデータのみ集計
+        if (dateStr === targetDate && warehouse === currentWarehouse) {
+            const quantity = parseInt(row['数行数'] || '0');
+            totalQuantity += quantity;
+        }
+    });
+
+    return totalQuantity;
+}
+
+// 指定日の入荷待ちデータ数量を取得（選択中の倉庫のみ）
+function getArrivalQuantityForDate(year, month, day) {
+    if (!arrivalData || !currentArrivalWarehouse) return 0;
+
+    const targetDateStr = `${year}/${String(month + 1).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
+    let totalQuantity = 0;
+
+    arrivalData.forEach(row => {
+        const dateStr = row['最終入荷予定日'] || '';
+        const address = row['発注納入先住所'] || '';
+        const warehouse = detectWarehouseFromAddress(address);
+
+        // 日付フォーマットを正規化（YYYY/MM/DD形式に統一）
+        const normalizedDateStr = normalizeDateString(dateStr);
+
+        // 選択中の倉庫のデータのみ集計
+        if (normalizedDateStr === targetDateStr && warehouse === currentArrivalWarehouse) {
+            const quantity = parseInt(row['数量'] || '0');
+            totalQuantity += quantity;
+        }
+    });
+
+    return totalQuantity;
+}
+
+// 日付文字列を正規化（様々な形式をYYYY/MM/DD形式に統一）
+function normalizeDateString(dateStr) {
+    if (!dateStr) return '';
+
+    // YYYY/MM/DD形式の場合
+    if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(dateStr)) {
+        const parts = dateStr.split('/');
+        return `${parts[0]}/${String(parts[1]).padStart(2, '0')}/${String(parts[2]).padStart(2, '0')}`;
+    }
+
+    // YYYY-MM-DD形式の場合
+    if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateStr)) {
+        const parts = dateStr.split('-');
+        return `${parts[0]}/${String(parts[1]).padStart(2, '0')}/${String(parts[2]).padStart(2, '0')}`;
+    }
+
+    return dateStr;
 }
 
 function renderSixMonthCalendar() {
@@ -487,13 +567,37 @@ function renderSingleMonth(year, month) {
 
         if (isToday) className += ' today';
 
-        // 業務記録があるかチェック
-        const hasWork = checkDateHasWork(year, month, day);
-        if (hasWork) className += ' has-work';
+        // カレンダーモードに応じた表示
+        let dataLabel = '';
+        let dataValue = 0;
+
+        if (calendarMode === 'work') {
+            // 業務記録モード
+            const hasWork = checkDateHasWork(year, month, day);
+            if (hasWork) className += ' has-work';
+        } else if (calendarMode === 'shipment') {
+            // 出荷データモード
+            dataValue = getShipmentQuantityForDate(year, month, day);
+            if (dataValue > 0) {
+                className += ' has-data';
+                dataLabel = `<div class="calendar-data-label">${dataValue}</div>`;
+            }
+        } else if (calendarMode === 'arrival') {
+            // 入荷待ちモード
+            dataValue = getArrivalQuantityForDate(year, month, day);
+            if (dataValue > 0) {
+                className += ' has-data';
+                dataLabel = `<div class="calendar-data-label">${dataValue}</div>`;
+            }
+        }
 
         const title = holidayName ? `title="${holidayName}"` : '';
-        const onclick = `onclick="openWorkDetailModal(${year}, ${month}, ${day})"`;
-        html += `<div class="${className}" ${title} ${onclick} style="cursor: pointer;">${day}</div>`;
+        const onclick = calendarMode === 'work' ? `onclick="openWorkDetailModal(${year}, ${month}, ${day})"` : '';
+        const cursor = calendarMode === 'work' ? 'cursor: pointer;' : '';
+        html += `<div class="${className}" ${title} ${onclick} style="${cursor}">
+            <div class="calendar-day-number">${day}</div>
+            ${dataLabel}
+        </div>`;
     }
 
     // 次月の日付（グリッドを埋める）
@@ -2635,6 +2739,11 @@ function processShipmentData() {
 
         showShipmentStatus(`データ読込完了 (${shipmentData.length}行)`, 'success');
 
+        // カレンダーを更新（出荷データモードの場合）
+        if (calendarMode === 'shipment') {
+            renderSixMonthCalendar();
+        }
+
     } catch (error) {
         showShipmentStatus(`エラー: ${error.message}`, 'error');
         console.error('データ処理エラー:', error);
@@ -2789,6 +2898,11 @@ function switchWarehouse(warehouse) {
             tab.classList.remove('active');
         }
     });
+
+    // カレンダーを更新（出荷データモードの場合）
+    if (calendarMode === 'shipment') {
+        renderSixMonthCalendar();
+    }
 
     // グラフを再描画
     renderChart(warehouse);
@@ -3151,6 +3265,11 @@ function processArrivalData() {
     updateArrivalChart();
 
     showArrivalStatus(`データ読込完了: ${arrivalData.length}行、${allArrivalWarehouses.length}倉庫`, 'success');
+
+    // カレンダーを更新（入荷待ちモードの場合）
+    if (calendarMode === 'arrival') {
+        renderSixMonthCalendar();
+    }
 }
 
 // 倉庫タブを作成
@@ -3172,6 +3291,11 @@ function switchArrivalWarehouse(warehouse) {
     currentArrivalWarehouse = warehouse;
     currentArrivalPeriodOffset = 0;
     updateArrivalChart();
+
+    // カレンダーを更新（入荷待ちモードの場合）
+    if (calendarMode === 'arrival') {
+        renderSixMonthCalendar();
+    }
 }
 
 // グラフを更新

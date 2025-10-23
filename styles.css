@@ -2228,6 +2228,15 @@ body {
     white-space: nowrap;
 }
 
+.record-date {
+    color: #909090;
+    font-size: 9px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-family: 'Courier New', 'SF Mono', 'Monaco', monospace;
+    min-width: 35px;
+}
+
 .record-time-range {
     color: #909090;
     font-size: 9px;

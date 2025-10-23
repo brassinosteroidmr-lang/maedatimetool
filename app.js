@@ -707,10 +707,12 @@ function renderTaskRecords() {
         const start = new Date(record.startTime);
         const end = new Date(record.endTime);
         const duration = formatDuration(record.duration);
+        const dateStr = formatDate(start);
 
         html += `
             <div class="record-item-compact">
                 <span class="record-task-name">${record.task}</span>
+                <span class="record-date">${dateStr}</span>
                 <span class="record-time-range">${formatTime(start)}-${formatTime(end)}</span>
                 <span class="record-duration-text">${duration}</span>
                 <button onclick="editRecord(${index})" class="record-edit-btn" title="編集">✎</button>
@@ -726,6 +728,12 @@ function formatTime(date) {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
+}
+
+function formatDate(date) {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${month}/${day}`;
 }
 
 function formatDuration(seconds) {

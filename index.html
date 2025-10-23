@@ -20,8 +20,17 @@
                         <div class="time-display-area">
                             <!-- 時計と日付の上部エリア -->
                             <div class="clock-info-area">
-                                <div id="digital-time" class="digital-time-compact"></div>
-                                <div id="current-date-display" class="date-display-compact"></div>
+                                <div class="clock-and-settings">
+                                    <div class="clock-display">
+                                        <div id="digital-time" class="digital-time-compact"></div>
+                                        <div id="current-date-display" class="date-display-compact"></div>
+                                    </div>
+                                    <!-- 全設定管理ボタン -->
+                                    <div class="settings-management">
+                                        <button onclick="exportAllSettings()" class="export-all-btn" title="全設定をファイルに保存">💾</button>
+                                        <button onclick="importAllSettings()" class="import-all-btn" title="全設定をファイルから読込">📂</button>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- 砂時計を並べるエリア -->
@@ -143,12 +152,6 @@
                                     </div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- 全設定管理ボタン -->
-                            <div class="settings-management">
-                                <button onclick="exportAllSettings()" class="export-all-btn" title="全設定をファイルに保存">💾 全設定保存</button>
-                                <button onclick="importAllSettings()" class="import-all-btn" title="全設定をファイルから読込">📂 全設定読込</button>
                             </div>
                         </div>
                         </section>

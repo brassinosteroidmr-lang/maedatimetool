@@ -85,6 +85,19 @@ body {
     margin-bottom: 15px;
 }
 
+.clock-and-settings {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.clock-display {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
 /* 砂時計を並べるエリア */
 .hourglasses-container {
     display: flex;
@@ -94,13 +107,9 @@ body {
 
 /* 全設定管理ボタン */
 .settings-management {
-    margin-top: 10px;
     display: flex;
-    gap: 6px;
-    justify-content: center;
-    padding: 8px;
-    background: rgba(58, 58, 58, 0.3);
-    border-radius: 4px;
+    gap: 4px;
+    align-items: center;
 }
 
 /* 勤務時間砂時計ラッパー */
@@ -201,6 +210,9 @@ body {
     background: #3a4a3a;
     border-color: #4a5a4a;
     font-weight: 600;
+    padding: 6px 10px;
+    font-size: 16px;
+    border-radius: 4px;
 }
 
 .export-all-btn:hover {
@@ -212,6 +224,9 @@ body {
     background: #3a3a4a;
     border-color: #4a4a5a;
     font-weight: 600;
+    padding: 6px 10px;
+    font-size: 16px;
+    border-radius: 4px;
 }
 
 .import-all-btn:hover {

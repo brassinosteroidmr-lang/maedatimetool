@@ -2518,6 +2518,8 @@ let shipmentData = null; // 読み込んだCSVデータ
 let shipmentChart = null; // Chart.jsインスタンス
 let currentWarehouse = null; // 現在表示中の倉庫
 let warehouseCapacities = {}; // 倉庫別キャパシティ設定
+let currentPeriodOffset = 0; // 表示期間のオフセット（0=今月から3ヶ月、1=3ヶ月後から、-1=3ヶ月前から）
+let allWarehouses = []; // 全倉庫リスト
 
 // CSVファイル選択ハンドラ
 function handleCSVFileSelect(event) {
@@ -2584,24 +2586,29 @@ function processShipmentData() {
         showShipmentStatus('データを集計中...', 'info');
 
         // 倉庫名のリストを取得
-        const warehouses = [...new Set(shipmentData.map(row => row['倉庫名']).filter(w => w))];
+        allWarehouses = [...new Set(shipmentData.map(row => row['倉庫名']).filter(w => w))];
 
-        if (warehouses.length === 0) {
+        if (allWarehouses.length === 0) {
             showShipmentStatus('倉庫名が見つかりません', 'error');
             return;
         }
 
         // キャパシティ設定をロード
-        loadCapacitySettings(warehouses);
+        loadCapacitySettings(allWarehouses);
 
-        // キャパシティ設定UIを表示
-        renderCapacitySettings(warehouses);
+        // キャパシティ設定ボタンを表示
+        document.getElementById('capacity-settings-btn').style.display = 'inline-block';
 
         // タブを生成
-        renderWarehouseTabs(warehouses);
+        renderWarehouseTabs(allWarehouses);
+
+        // コントロールを表示
+        document.getElementById('chart-controls').style.display = 'flex';
+        document.getElementById('chart-and-table').style.display = 'block';
 
         // 最初の倉庫を表示
-        currentWarehouse = warehouses[0];
+        currentWarehouse = allWarehouses[0];
+        currentPeriodOffset = 0;
         renderChart(currentWarehouse);
 
         showShipmentStatus(`データ読込完了 (${shipmentData.length}行)`, 'success');
@@ -2644,14 +2651,14 @@ function aggregateDataByWarehouse(warehouse) {
     return sorted;
 }
 
-// キャパシティ設定UIを表示
-function renderCapacitySettings(warehouses) {
-    const settingsDiv = document.getElementById('capacity-settings');
-    const inputsDiv = document.getElementById('capacity-inputs');
+// キャパシティ設定モーダルを開く
+function openCapacitySettings() {
+    const modal = document.getElementById('capacity-modal');
+    const inputsDiv = document.getElementById('capacity-inputs-modal');
 
     inputsDiv.innerHTML = '';
 
-    warehouses.forEach(warehouse => {
+    allWarehouses.forEach(warehouse => {
         const capacity = warehouseCapacities[warehouse] || 60;
 
         const wrapper = document.createElement('div');
@@ -2673,7 +2680,12 @@ function renderCapacitySettings(warehouses) {
         inputsDiv.appendChild(wrapper);
     });
 
-    settingsDiv.style.display = 'block';
+    modal.style.display = 'flex';
+}
+
+// キャパシティ設定モーダルを閉じる
+function closeCapacityModal() {
+    document.getElementById('capacity-modal').style.display = 'none';
 }
 
 // キャパシティ設定を保存
@@ -2686,6 +2698,9 @@ function saveCapacitySettings() {
 
     // localStorageに保存
     localStorage.setItem('warehouse-capacities', JSON.stringify(warehouseCapacities));
+
+    // モーダルを閉じる
+    closeCapacityModal();
 
     // グラフを再描画
     if (currentWarehouse) {
@@ -2749,14 +2764,43 @@ function switchWarehouse(warehouse) {
     renderChart(warehouse);
 }
 
-// グラフを描画
+// 期間ナビゲーション: 前へ
+function previousPeriod() {
+    currentPeriodOffset--;
+    renderChart(currentWarehouse);
+}
+
+// 期間ナビゲーション: 次へ
+function nextPeriod() {
+    currentPeriodOffset++;
+    renderChart(currentWarehouse);
+}
+
+// グラフを描画（3ヶ月表示）
 function renderChart(warehouse) {
     const aggregated = aggregateDataByWarehouse(warehouse);
     const capacity = warehouseCapacities[warehouse] || 60;
 
+    // 表示期間を計算（今日から3ヶ月分 + オフセット）
+    const today = new Date();
+    const startDate = new Date(today.getFullYear(), today.getMonth() + (currentPeriodOffset * 3), 1);
+    const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 3, 0);
+
+    // 期間ラベルを更新
+    const periodLabel = document.getElementById('current-period');
+    const startStr = `${startDate.getFullYear()}/${String(startDate.getMonth() + 1).padStart(2, '0')}`;
+    const endStr = `${endDate.getFullYear()}/${String(endDate.getMonth() + 1).padStart(2, '0')}`;
+    periodLabel.textContent = `${startStr} 〜 ${endStr}`;
+
+    // 期間内のデータのみフィルター
+    const filtered = aggregated.filter(item => {
+        const date = new Date(item.date);
+        return date >= startDate && date <= endDate;
+    });
+
     // 日付ラベルと数行数データを準備
-    const labels = aggregated.map(item => item.date);
-    const rowCounts = aggregated.map(item => item.rowCount);
+    const labels = filtered.map(item => item.date);
+    const rowCounts = filtered.map(item => item.rowCount);
 
     // Chart.jsでグラフを描画
     const ctx = document.getElementById('shipment-chart');
@@ -2776,7 +2820,15 @@ function renderChart(warehouse) {
                     data: rowCounts,
                     backgroundColor: 'rgba(54, 162, 235, 0.7)',
                     borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
+                    borderWidth: 1,
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        color: '#d0d0d0',
+                        font: {
+                            size: 10
+                        }
+                    }
                 },
                 {
                     label: 'キャパシティ',
@@ -2786,7 +2838,10 @@ function renderChart(warehouse) {
                     borderWidth: 2,
                     borderDash: [5, 5],
                     fill: false,
-                    pointRadius: 0
+                    pointRadius: 0,
+                    datalabels: {
+                        display: false
+                    }
                 }
             ]
         },
@@ -2799,11 +2854,18 @@ function renderChart(warehouse) {
                     text: `${warehouse} - 出荷データ`,
                     font: {
                         size: 16
-                    }
+                    },
+                    color: '#d0d0d0'
                 },
                 legend: {
                     display: true,
-                    position: 'top'
+                    position: 'top',
+                    labels: {
+                        color: '#d0d0d0'
+                    }
+                },
+                datalabels: {
+                    display: true
                 }
             },
             scales: {
@@ -2811,21 +2873,70 @@ function renderChart(warehouse) {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: '数量'
+                        text: '数量',
+                        color: '#c0c0c0'
+                    },
+                    ticks: {
+                        color: '#b0b0b0'
+                    },
+                    grid: {
+                        color: '#3a3a3a'
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: '出荷希望日'
+                        text: '出荷希望日',
+                        color: '#c0c0c0'
+                    },
+                    ticks: {
+                        color: '#b0b0b0'
+                    },
+                    grid: {
+                        color: '#3a3a3a'
                     }
                 }
             }
-        }
+        },
+        plugins: [ChartDataLabels]
     });
 
-    // グラフエリアを表示
-    document.getElementById('chart-container').style.display = 'block';
+    // データテーブルを描画
+    renderDataTable(filtered, capacity);
+}
+
+// データテーブルを描画
+function renderDataTable(data, capacity) {
+    const table = document.getElementById('data-table');
+
+    let html = `
+        <thead>
+            <tr>
+                <th>出荷希望日</th>
+                <th>数行数</th>
+                <th>キャパシティ</th>
+                <th>差分</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+    data.forEach(item => {
+        const diff = item.rowCount - capacity;
+        const diffClass = diff > 0 ? 'over-capacity' : '';
+
+        html += `
+            <tr>
+                <td>${item.date}</td>
+                <td>${item.rowCount}</td>
+                <td>${capacity}</td>
+                <td class="${diffClass}">${diff > 0 ? '+' : ''}${diff}</td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody>';
+    table.innerHTML = html;
 }
 
 // ステータスメッセージを表示

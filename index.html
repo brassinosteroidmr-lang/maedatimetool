@@ -184,58 +184,64 @@
                 </div>
             </div>
 
-            <!-- 中段: 定型文とExcel処理 -->
+            <!-- 中段: 定型文 -->
             <div class="middle-section">
-                <div class="horizontal-sections">
-                    <!-- 定型文セクション -->
-                    <section class="template-section">
-                        <div class="template-text-section">
-                            <div class="template-header">
-                                <h3>定型文</h3>
-                                <button onclick="openTemplateSettings()" class="template-settings-btn" title="設定">⚙</button>
-                            </div>
-                            <div id="template-list" class="template-list"></div>
+                <!-- 定型文セクション -->
+                <section class="template-section">
+                    <div class="template-text-section">
+                        <div class="template-header">
+                            <h3>定型文</h3>
+                            <button onclick="openTemplateSettings()" class="template-settings-btn" title="設定">⚙</button>
                         </div>
-                    </section>
+                        <div id="template-list" class="template-list"></div>
+                    </div>
+                </section>
+            </div>
 
-                    <!-- 出荷データ可視化セクション -->
-                    <section class="template-section">
-                        <div class="shipment-chart-section">
-                            <div class="template-header">
-                                <h3>出荷データ可視化</h3>
+            <!-- 出荷データ可視化セクション -->
+            <div class="shipment-section">
+                <section class="template-section">
+                    <div class="shipment-chart-section">
+                        <div class="template-header">
+                            <h3>出荷データ可視化</h3>
+                            <button onclick="openCapacitySettings()" class="template-settings-btn" title="キャパシティ設定" id="capacity-settings-btn" style="display: none;">⚙</button>
+                        </div>
+                        <div class="shipment-chart-content">
+                            <!-- CSVファイル選択 -->
+                            <div class="csv-select-group">
+                                <label class="csv-label">CSVファイルパス:</label>
+                                <input type="text" id="csv-path-input" class="csv-path-input"
+                                       value="N:\業務本部\資材課\0-00_総合\ダッシュボード\出荷指示明細リスト.csv" readonly>
+                                <input type="file" id="csv-file-input" accept=".csv" style="display: none;" onchange="handleCSVFileSelect(event)">
+                                <button onclick="document.getElementById('csv-file-input').click()" class="csv-select-btn">📁 ファイル選択</button>
+                                <button onclick="loadShipmentData()" class="csv-load-btn">📊 データ読込</button>
                             </div>
-                            <div class="shipment-chart-content">
-                                <!-- CSVファイル選択 -->
-                                <div class="csv-select-group">
-                                    <label class="csv-label">CSVファイルパス:</label>
-                                    <input type="text" id="csv-path-input" class="csv-path-input"
-                                           value="N:\業務本部\資材課\0-00_総合\ダッシュボード\出荷指示明細リスト.csv" readonly>
-                                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;" onchange="handleCSVFileSelect(event)">
-                                    <button onclick="document.getElementById('csv-file-input').click()" class="csv-select-btn">📁 ファイル選択</button>
-                                    <button onclick="loadShipmentData()" class="csv-load-btn">📊 データ読込</button>
+
+                            <!-- ステータス表示 -->
+                            <div id="shipment-status" class="shipment-status"></div>
+
+                            <!-- タブとナビゲーション -->
+                            <div class="chart-controls" id="chart-controls" style="display: none;">
+                                <div class="warehouse-tabs" id="warehouse-tabs"></div>
+                                <div class="chart-navigation">
+                                    <button onclick="previousPeriod()" class="nav-btn">◀ 前</button>
+                                    <span id="current-period" class="period-label"></span>
+                                    <button onclick="nextPeriod()" class="nav-btn">次 ▶</button>
                                 </div>
+                            </div>
 
-                                <!-- キャパシティ設定 -->
-                                <div class="capacity-settings" id="capacity-settings" style="display: none;">
-                                    <label class="capacity-label">⚙️ 倉庫別キャパシティ設定:</label>
-                                    <div class="capacity-inputs" id="capacity-inputs"></div>
-                                    <button onclick="saveCapacitySettings()" class="capacity-save-btn">💾 設定保存</button>
-                                </div>
-
-                                <!-- ステータス表示 -->
-                                <div id="shipment-status" class="shipment-status"></div>
-
-                                <!-- タブ切り替え -->
-                                <div class="warehouse-tabs" id="warehouse-tabs" style="display: none;"></div>
-
-                                <!-- グラフエリア -->
-                                <div class="chart-container" id="chart-container" style="display: none;">
+                            <!-- グラフとデータテーブル -->
+                            <div class="chart-and-table" id="chart-and-table" style="display: none;">
+                                <div class="chart-container" id="chart-container">
                                     <canvas id="shipment-chart"></canvas>
                                 </div>
+                                <div class="data-table-container" id="data-table-container">
+                                    <table class="data-table" id="data-table"></table>
+                                </div>
                             </div>
                         </div>
-                    </section>
-                </div>
+                    </div>
+                </section>
             </div>
 
             <!-- 下段: カレンダー -->
@@ -293,10 +299,28 @@
         </div>
     </div>
 
+    <!-- キャパシティ設定モーダル -->
+    <div id="capacity-modal" class="capacity-modal" style="display: none;">
+        <div class="capacity-modal-content">
+            <div class="capacity-modal-header">
+                <h3>倉庫別キャパシティ設定</h3>
+                <button onclick="closeCapacityModal()" class="close-modal-btn">×</button>
+            </div>
+            <div class="capacity-modal-body">
+                <div class="capacity-inputs" id="capacity-inputs-modal"></div>
+            </div>
+            <div class="capacity-modal-footer">
+                <button onclick="saveCapacitySettings()" class="capacity-save-btn">💾 設定保存</button>
+            </div>
+        </div>
+    </div>
+
     <!-- SheetJSライブラリ (.xls/.xlsx両対応) -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <!-- Chart.jsライブラリ (グラフ描画用) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Chart.js データラベルプラグイン -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <!-- PapaParse (CSV解析用) -->
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="app.js"></script>

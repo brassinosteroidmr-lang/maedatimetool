@@ -2659,7 +2659,7 @@ function openCapacitySettings() {
     inputsDiv.innerHTML = '';
 
     allWarehouses.forEach(warehouse => {
-        const capacity = warehouseCapacities[warehouse] || 60;
+        const capacity = warehouseCapacities[warehouse];
 
         const wrapper = document.createElement('div');
         wrapper.className = 'capacity-input-wrapper';
@@ -2669,10 +2669,10 @@ function openCapacitySettings() {
         label.className = 'capacity-input-label';
 
         const input = document.createElement('input');
-        input.type = 'number';
+        input.type = 'text';
         input.id = `capacity-${warehouse}`;
-        input.value = capacity;
-        input.min = 0;
+        input.value = capacity !== null && capacity !== undefined ? capacity : '';
+        input.placeholder = 'キャパなし (空欄)';
         input.className = 'capacity-input';
 
         wrapper.appendChild(label);
@@ -2693,7 +2693,15 @@ function saveCapacitySettings() {
     const inputs = document.querySelectorAll('.capacity-input');
     inputs.forEach(input => {
         const warehouse = input.id.replace('capacity-', '');
-        warehouseCapacities[warehouse] = parseInt(input.value) || 60;
+        const value = input.value.trim();
+
+        if (value === '') {
+            // 空欄の場合はnull (キャパなし)
+            warehouseCapacities[warehouse] = null;
+        } else {
+            const numValue = parseInt(value);
+            warehouseCapacities[warehouse] = isNaN(numValue) ? null : numValue;
+        }
     });
 
     // localStorageに保存
@@ -2810,40 +2818,47 @@ function renderChart(warehouse) {
         shipmentChart.destroy();
     }
 
+    // データセットを構築
+    const datasets = [
+        {
+            label: '数行数',
+            data: rowCounts,
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1,
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                color: '#d0d0d0',
+                font: {
+                    size: 10
+                }
+            }
+        }
+    ];
+
+    // capacityがnullでない場合のみキャパシティラインを追加
+    if (capacity !== null && capacity !== undefined) {
+        datasets.push({
+            label: 'キャパシティ',
+            data: Array(labels.length).fill(capacity),
+            type: 'line',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            fill: false,
+            pointRadius: 0,
+            datalabels: {
+                display: false
+            }
+        });
+    }
+
     shipmentChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
-            datasets: [
-                {
-                    label: '数行数',
-                    data: rowCounts,
-                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1,
-                    datalabels: {
-                        anchor: 'end',
-                        align: 'top',
-                        color: '#d0d0d0',
-                        font: {
-                            size: 10
-                        }
-                    }
-                },
-                {
-                    label: 'キャパシティ',
-                    data: Array(labels.length).fill(capacity),
-                    type: 'line',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    fill: false,
-                    pointRadius: 0,
-                    datalabels: {
-                        display: false
-                    }
-                }
-            ]
+            datasets: datasets
         },
         options: {
             responsive: true,

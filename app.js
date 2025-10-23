@@ -1584,6 +1584,9 @@ function updateCountdownTimer() {
             miniSandBottom.style.height = '0%'; // 画面の上（空）
         }
 
+        // 控えめな通知音を鳴らす
+        playNotificationSound();
+
         return;
     }
 
@@ -2954,6 +2957,43 @@ window.addEventListener('beforeunload', function(e) {
     e.returnValue = ''; // Chrome では空文字列を設定する必要がある
     return ''; // 一部のブラウザ向け
 });
+
+// ========================================
+// 通知音機能
+// ========================================
+
+// 控えめな通知音を再生
+function playNotificationSound() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // 優しいベル音（2音階）
+        const frequencies = [523.25, 659.25]; // C5, E5（ドミ）
+        let startTime = audioContext.currentTime;
+
+        frequencies.forEach((freq, index) => {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.type = 'sine'; // 柔らかい音
+            oscillator.frequency.value = freq;
+
+            // 音量エンベロープ（控えめ）
+            const noteStart = startTime + (index * 0.15);
+            gainNode.gain.setValueAtTime(0, noteStart);
+            gainNode.gain.linearRampToValueAtTime(0.15, noteStart + 0.02); // 音量小さめ
+            gainNode.gain.exponentialRampToValueAtTime(0.01, noteStart + 0.3);
+
+            oscillator.start(noteStart);
+            oscillator.stop(noteStart + 0.3);
+        });
+    } catch (error) {
+        console.log('通知音の再生に失敗しました:', error);
+    }
+}
 
 // ページ読み込み時に初期化
 document.addEventListener('DOMContentLoaded', init);

@@ -246,6 +246,49 @@
                 </section>
             </div>
 
+            <!-- 入荷待ちデータ可視化セクション -->
+            <div class="arrival-section">
+                <section class="template-section">
+                    <div class="arrival-chart-section">
+                        <div class="template-header">
+                            <h3>入荷待ちデータ可視化</h3>
+                            <button onclick="openWarehouseMappingSettings()" class="template-settings-btn" title="倉庫マッピング設定" id="warehouse-mapping-btn">⚙</button>
+                        </div>
+                        <div class="arrival-chart-content">
+                            <!-- CSVファイル選択 -->
+                            <div class="csv-select-group">
+                                <label class="csv-label">CSVファイルパス:</label>
+                                <input type="text" id="arrival-csv-path-input" class="csv-path-input"
+                                       value="N:\業務本部\資材課\0-00_総合\ダッシュボード\資材状況リスト.csv" readonly>
+                                <input type="file" id="arrival-csv-file-input" accept=".csv" style="display: none;" onchange="handleArrivalCSVFileSelect(event)">
+                                <button onclick="document.getElementById('arrival-csv-file-input').click()" class="csv-select-btn">📁 ファイル選択</button>
+                                <button onclick="loadArrivalData()" class="csv-load-btn">📊 データ読込</button>
+                            </div>
+
+                            <!-- ステータス表示 -->
+                            <div id="arrival-status" class="shipment-status"></div>
+
+                            <!-- タブとナビゲーション -->
+                            <div class="chart-controls" id="arrival-chart-controls" style="display: none;">
+                                <div class="warehouse-tabs" id="arrival-warehouse-tabs"></div>
+                                <div class="chart-navigation">
+                                    <button onclick="previousArrivalPeriod()" class="nav-btn">◀ 前</button>
+                                    <span id="arrival-current-period" class="period-label"></span>
+                                    <button onclick="nextArrivalPeriod()" class="nav-btn">次 ▶</button>
+                                </div>
+                            </div>
+
+                            <!-- グラフ -->
+                            <div class="chart-and-table" id="arrival-chart-and-table" style="display: none;">
+                                <div class="chart-container" id="arrival-chart-container">
+                                    <canvas id="arrival-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
             <!-- 下段: カレンダー -->
             <div class="bottom-section">
                 <section class="calendar-section">
@@ -313,6 +356,56 @@
             </div>
             <div class="capacity-modal-footer">
                 <button onclick="saveCapacitySettings()" class="capacity-save-btn">💾 設定保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 倉庫マッピング設定モーダル -->
+    <div id="warehouse-mapping-modal" class="capacity-modal" style="display: none;">
+        <div class="capacity-modal-content">
+            <div class="capacity-modal-header">
+                <h3>倉庫マッピング設定</h3>
+                <button onclick="closeWarehouseMappingModal()" class="close-modal-btn">×</button>
+            </div>
+            <div class="capacity-modal-body">
+                <p style="margin-bottom: 15px; color: #b0b0b0; font-size: 13px;">
+                    発注納入先住所の一部文字列で倉庫を判定します。各倉庫のキーワードを設定してください。
+                </p>
+                <div class="warehouse-mapping-inputs" id="warehouse-mapping-inputs">
+                    <div class="warehouse-mapping-item">
+                        <label>倉庫1 名称:</label>
+                        <input type="text" id="warehouse-1-name" class="warehouse-name-input" placeholder="例: MCUD神戸西倉庫">
+                        <label>判定キーワード:</label>
+                        <input type="text" id="warehouse-1-keyword" class="warehouse-keyword-input" placeholder="例: 兵庫県神戸市須磨区弥栄台">
+                    </div>
+                    <div class="warehouse-mapping-item">
+                        <label>倉庫2 名称:</label>
+                        <input type="text" id="warehouse-2-name" class="warehouse-name-input" placeholder="例: 横浜倉庫">
+                        <label>判定キーワード:</label>
+                        <input type="text" id="warehouse-2-keyword" class="warehouse-keyword-input" placeholder="例: 神奈川県横浜市">
+                    </div>
+                    <div class="warehouse-mapping-item">
+                        <label>倉庫3 名称:</label>
+                        <input type="text" id="warehouse-3-name" class="warehouse-name-input" placeholder="例: 大阪倉庫">
+                        <label>判定キーワード:</label>
+                        <input type="text" id="warehouse-3-keyword" class="warehouse-keyword-input" placeholder="例: 大阪府">
+                    </div>
+                    <div class="warehouse-mapping-item">
+                        <label>倉庫4 名称:</label>
+                        <input type="text" id="warehouse-4-name" class="warehouse-name-input" placeholder="例: 名古屋倉庫">
+                        <label>判定キーワード:</label>
+                        <input type="text" id="warehouse-4-keyword" class="warehouse-keyword-input" placeholder="例: 愛知県名古屋市">
+                    </div>
+                    <div class="warehouse-mapping-item">
+                        <label>倉庫5 名称:</label>
+                        <input type="text" id="warehouse-5-name" class="warehouse-name-input" placeholder="例: 福岡倉庫">
+                        <label>判定キーワード:</label>
+                        <input type="text" id="warehouse-5-keyword" class="warehouse-keyword-input" placeholder="例: 福岡県">
+                    </div>
+                </div>
+            </div>
+            <div class="capacity-modal-footer">
+                <button onclick="saveWarehouseMappingSettings()" class="capacity-save-btn">💾 設定保存</button>
             </div>
         </div>
     </div>

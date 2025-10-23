@@ -87,16 +87,17 @@ body {
 
 .clock-and-settings {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     gap: 15px;
+    position: relative;
 }
 
 .clock-date-group {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 }
 
 /* 砂時計を並べるエリア */
@@ -112,6 +113,8 @@ body {
     flex-direction: column;
     gap: 4px;
     align-items: flex-start;
+    position: absolute;
+    left: 0;
 }
 
 /* 勤務時間砂時計ラッパー */
@@ -3185,6 +3188,44 @@ body {
     border-top: 1px solid #3a3a3a;
     display: flex;
     justify-content: flex-end;
+}
+
+/* 倉庫マッピング設定 */
+.warehouse-mapping-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.warehouse-mapping-item {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 8px;
+    align-items: center;
+    padding: 12px;
+    background: #333333;
+    border-radius: 4px;
+}
+
+.warehouse-mapping-item label {
+    font-size: 13px;
+    color: #b0b0b0;
+}
+
+.warehouse-name-input,
+.warehouse-keyword-input {
+    padding: 6px 10px;
+    background: #2a2a2a;
+    border: 1px solid #4a4a4a;
+    border-radius: 4px;
+    color: #e8e8e8;
+    font-size: 13px;
+}
+
+.warehouse-name-input:focus,
+.warehouse-keyword-input:focus {
+    outline: none;
+    border-color: #5a9fd4;
 }
 
 /* レスポンシブ */

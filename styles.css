@@ -90,7 +90,12 @@ body {
     justify-content: space-between;
     align-items: center;
     gap: 15px;
-    margin-bottom: 5px;
+}
+
+.clock-date-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
 /* 砂時計を並べるエリア */
@@ -103,8 +108,9 @@ body {
 /* 全設定管理ボタン */
 .settings-management {
     display: flex;
-    gap: 6px;
-    align-items: center;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
 }
 
 /* 勤務時間砂時計ラッパー */

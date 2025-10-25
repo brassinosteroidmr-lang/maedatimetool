@@ -2708,6 +2708,13 @@ function processShipmentData() {
             return;
         }
 
+        // デバッグ: ヘッダー情報を出力
+        if (shipmentData.length > 0) {
+            console.log('=== 出荷データCSVヘッダー情報 ===');
+            console.log('利用可能な列名:', Object.keys(shipmentData[0]));
+            console.log('サンプルデータ（1行目）:', shipmentData[0]);
+        }
+
         showShipmentStatus('データを集計中...', 'info');
 
         // 倉庫名のリストを取得
@@ -3216,6 +3223,13 @@ function processArrivalData() {
     if (!arrivalData || arrivalData.length === 0) {
         showArrivalStatus('データが空です', 'error');
         return;
+    }
+
+    // デバッグ: ヘッダー情報を出力
+    if (arrivalData.length > 0) {
+        console.log('=== 入荷待ちCSVヘッダー情報 ===');
+        console.log('利用可能な列名:', Object.keys(arrivalData[0]));
+        console.log('サンプルデータ（1行目）:', arrivalData[0]);
     }
 
     loadWarehouseMappings();

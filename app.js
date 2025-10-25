@@ -2687,7 +2687,19 @@ function parseCSVData(csvText) {
         Papa.parse(csvText, {
             header: true,
             skipEmptyLines: true,
+            quoteChar: '"',
+            escapeChar: '"',
+            delimiter: ',',
+            newline: '\r\n',
             complete: function(results) {
+                console.log('=== PapaParse解析結果 ===');
+                console.log('エラー:', results.errors);
+                console.log('メタ情報:', results.meta);
+
+                if (results.errors && results.errors.length > 0) {
+                    console.warn('パース時の警告:', results.errors);
+                }
+
                 shipmentData = results.data;
                 processShipmentData();
             },
@@ -3202,10 +3214,24 @@ function loadArrivalData() {
 // CSVデータを解析
 function parseArrivalCSVData(csvText) {
     try {
+        showArrivalStatus('データを解析中...', 'info');
+
         Papa.parse(csvText, {
             header: true,
             skipEmptyLines: true,
+            quoteChar: '"',
+            escapeChar: '"',
+            delimiter: ',',
+            newline: '\r\n',
             complete: function(results) {
+                console.log('=== 入荷待ちPapaParse解析結果 ===');
+                console.log('エラー:', results.errors);
+                console.log('メタ情報:', results.meta);
+
+                if (results.errors && results.errors.length > 0) {
+                    console.warn('パース時の警告:', results.errors);
+                }
+
                 arrivalData = results.data;
                 processArrivalData();
             },

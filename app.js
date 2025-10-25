@@ -2690,14 +2690,24 @@ function parseCSVData(csvText) {
             quoteChar: '"',
             escapeChar: '"',
             delimiter: ',',
-            newline: '\r\n',
+            // newlineは自動検出に任せる（データ内改行対応のため）
+            dynamicTyping: false,
             complete: function(results) {
-                console.log('=== PapaParse解析結果 ===');
+                console.log('=== 出荷データPapaParse解析結果 ===');
                 console.log('エラー:', results.errors);
                 console.log('メタ情報:', results.meta);
+                console.log('データ行数:', results.data.length);
 
                 if (results.errors && results.errors.length > 0) {
-                    console.warn('パース時の警告:', results.errors);
+                    console.warn('パース時の警告（最初の10件）:', results.errors.slice(0, 10));
+                }
+
+                if (results.data.length > 0) {
+                    const firstRow = results.data[0];
+                    if (firstRow.__parsed_extra) {
+                        console.warn('警告: 列数の不一致が検出されました。余分なデータ:', firstRow.__parsed_extra);
+                    }
+                    console.log('1行目の列数:', Object.keys(firstRow).length);
                 }
 
                 shipmentData = results.data;
@@ -3222,14 +3232,25 @@ function parseArrivalCSVData(csvText) {
             quoteChar: '"',
             escapeChar: '"',
             delimiter: ',',
-            newline: '\r\n',
+            // newlineは自動検出に任せる（データ内改行対応のため）
+            dynamicTyping: false,
             complete: function(results) {
                 console.log('=== 入荷待ちPapaParse解析結果 ===');
                 console.log('エラー:', results.errors);
                 console.log('メタ情報:', results.meta);
+                console.log('データ行数:', results.data.length);
 
                 if (results.errors && results.errors.length > 0) {
-                    console.warn('パース時の警告:', results.errors);
+                    console.warn('パース時の警告（最初の10件）:', results.errors.slice(0, 10));
+                }
+
+                // 最後の行の__parsed_extraをチェック
+                if (results.data.length > 0) {
+                    const firstRow = results.data[0];
+                    if (firstRow.__parsed_extra) {
+                        console.warn('警告: 列数の不一致が検出されました。余分なデータ:', firstRow.__parsed_extra);
+                    }
+                    console.log('1行目の列数:', Object.keys(firstRow).length);
                 }
 
                 arrivalData = results.data;

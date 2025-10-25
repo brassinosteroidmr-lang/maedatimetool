@@ -485,8 +485,7 @@ body {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
-    max-height: 450px;
-    overflow-y: auto;
+    /* スクロールなしで全体表示 */
 }
 
 .calendar-month {
@@ -2341,26 +2340,22 @@ body {
 
 /* スクロールバーのスタイル */
 .news-container::-webkit-scrollbar,
-.record-list::-webkit-scrollbar,
-#calendar-container::-webkit-scrollbar {
+.record-list::-webkit-scrollbar {
     width: 6px;
 }
 
 .news-container::-webkit-scrollbar-track,
-.record-list::-webkit-scrollbar-track,
-#calendar-container::-webkit-scrollbar-track {
+.record-list::-webkit-scrollbar-track {
     background: #1a1a1a;
 }
 
 .news-container::-webkit-scrollbar-thumb,
-.record-list::-webkit-scrollbar-thumb,
-#calendar-container::-webkit-scrollbar-thumb {
+.record-list::-webkit-scrollbar-thumb {
     background: #3a3a3a;
 }
 
 .news-container::-webkit-scrollbar-thumb:hover,
-.record-list::-webkit-scrollbar-thumb:hover,
-#calendar-container::-webkit-scrollbar-thumb:hover {
+.record-list::-webkit-scrollbar-thumb:hover {
     background: #4a4a4a;
 }
 

@@ -3513,6 +3513,18 @@ function drawArrivalChart(dates, quantities) {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
                     titleColor: '#e8e8e8',
                     bodyColor: '#e8e8e8'
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    color: '#e8e8e8',
+                    font: {
+                        weight: 'bold',
+                        size: 11
+                    },
+                    formatter: function(value) {
+                        return value > 0 ? value : '';
+                    }
                 }
             },
             scales: {

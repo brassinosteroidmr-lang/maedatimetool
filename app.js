@@ -3226,6 +3226,25 @@ function parseArrivalCSVData(csvText) {
     try {
         showArrivalStatus('データを解析中...', 'info');
 
+        // ヘッダー行の問題を修正
+        // '注文書番号"_1,"発注先コード' を '注文書番号_1","発注先コード' に分割
+        const lines = csvText.split(/\r?\n/);
+        if (lines.length > 0) {
+            const originalHeader = lines[0];
+            // 問題のある列名を修正
+            const fixedHeader = originalHeader.replace(
+                '"注文書番号"_1,"発注先コード"',
+                '"注文書番号_1","発注先コード"'
+            );
+            lines[0] = fixedHeader;
+            csvText = lines.join('\n');
+
+            console.log('=== ヘッダー修正 ===');
+            if (originalHeader !== fixedHeader) {
+                console.log('ヘッダーを修正しました');
+            }
+        }
+
         Papa.parse(csvText, {
             header: true,
             skipEmptyLines: true,

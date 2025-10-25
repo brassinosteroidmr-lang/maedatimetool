@@ -3227,22 +3227,35 @@ function parseArrivalCSVData(csvText) {
         showArrivalStatus('データを解析中...', 'info');
 
         // ヘッダー行の問題を修正
-        // '注文書番号"_1,"発注先コード' を '注文書番号_1","発注先コード' に分割
         const lines = csvText.split(/\r?\n/);
         if (lines.length > 0) {
             const originalHeader = lines[0];
-            // 問題のある列名を修正
-            const fixedHeader = originalHeader.replace(
-                '"注文書番号"_1,"発注先コード"',
-                '"注文書番号_1","発注先コード"'
-            );
-            lines[0] = fixedHeader;
-            csvText = lines.join('\n');
 
             console.log('=== ヘッダー修正 ===');
+            console.log('元のヘッダー長さ:', originalHeader.length);
+
+            // 問題のある箇所を探す
+            const problematicPattern = originalHeader.indexOf('注文書番号');
+            if (problematicPattern !== -1) {
+                const snippet = originalHeader.substring(problematicPattern, problematicPattern + 100);
+                console.log('注文書番号周辺:', snippet);
+            }
+
+            // 複数のパターンを試す
+            let fixedHeader = originalHeader
+                .replace('"注文書番号"_1,"発注先コード"', '"注文書番号_1","発注先コード"')
+                .replace('","注文書番号"_1,"発注先コード', '","注文書番号_1","発注先コード')
+                .replace('"注文書番号""_1,""発注先コード"', '"注文書番号_1","発注先コード"');
+
             if (originalHeader !== fixedHeader) {
                 console.log('ヘッダーを修正しました');
+                console.log('修正後の長さ:', fixedHeader.length);
+            } else {
+                console.log('警告: ヘッダーの修正が適用されませんでした');
             }
+
+            lines[0] = fixedHeader;
+            csvText = lines.join('\n');
         }
 
         Papa.parse(csvText, {

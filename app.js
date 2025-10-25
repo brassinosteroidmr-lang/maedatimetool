@@ -566,36 +566,52 @@ function renderSingleMonth(year, month) {
 
         if (isToday) className += ' today';
 
-        // カレンダーモードに応じた表示
-        let dataLabel = '';
-        let dataValue = 0;
+        // 統合データ表示：業務記録・出荷・入荷を全て表示
+        const hasWork = checkDateHasWork(year, month, day);
+        const shipmentQty = getShipmentQuantityForDate(year, month, day);
+        const arrivalQty = getArrivalQuantityForDate(year, month, day);
 
-        if (calendarMode === 'work') {
-            // 業務記録モード
-            const hasWork = checkDateHasWork(year, month, day);
-            if (hasWork) className += ' has-work';
-        } else if (calendarMode === 'shipment') {
-            // 出荷データモード
-            dataValue = getShipmentQuantityForDate(year, month, day);
-            if (dataValue > 0) {
-                className += ' has-data';
-                dataLabel = `<div class="calendar-data-label">${dataValue}</div>`;
-            }
-        } else if (calendarMode === 'arrival') {
-            // 入荷待ちモード
-            dataValue = getArrivalQuantityForDate(year, month, day);
-            if (dataValue > 0) {
-                className += ' has-data';
-                dataLabel = `<div class="calendar-data-label">${dataValue}</div>`;
-            }
+        // データがある場合のクラス
+        if (hasWork || shipmentQty > 0 || arrivalQty > 0) {
+            className += ' has-data';
+        }
+
+        // データインジケーターを作成
+        let dataIndicators = '';
+
+        // 業務記録インジケーター
+        if (hasWork) {
+            dataIndicators += `<div class="calendar-work-indicator" title="業務記録あり"></div>`;
+        }
+
+        // 出荷・入荷データのバーグラフ
+        let dataBars = '';
+        const maxValue = Math.max(shipmentQty, arrivalQty, 1); // 最大値でスケーリング
+
+        if (shipmentQty > 0) {
+            const barWidth = (shipmentQty / maxValue) * 100;
+            dataBars += `<div class="calendar-data-bar shipment-bar" style="width: ${barWidth}%" title="出荷: ${shipmentQty}行">
+                <span class="bar-label">📦${shipmentQty}</span>
+            </div>`;
+        }
+
+        if (arrivalQty > 0) {
+            const barWidth = (arrivalQty / arrivalQty) * 100; // 入荷は独立して表示
+            dataBars += `<div class="calendar-data-bar arrival-bar" style="width: ${barWidth}%" title="入荷: ${arrivalQty}個">
+                <span class="bar-label">📥${arrivalQty}</span>
+            </div>`;
         }
 
         const title = holidayName ? `title="${holidayName}"` : '';
-        const onclick = calendarMode === 'work' ? `onclick="openWorkDetailModal(${year}, ${month}, ${day})"` : '';
-        const cursor = calendarMode === 'work' ? 'cursor: pointer;' : '';
+        const onclick = hasWork ? `onclick="openWorkDetailModal(${year}, ${month}, ${day})"` : '';
+        const cursor = hasWork ? 'cursor: pointer;' : '';
+
         html += `<div class="${className}" ${title} ${onclick} style="${cursor}">
             <div class="calendar-day-number">${day}</div>
-            ${dataLabel}
+            ${dataIndicators}
+            <div class="calendar-data-bars">
+                ${dataBars}
+            </div>
         </div>`;
     }
 

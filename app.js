@@ -3221,71 +3221,68 @@ function loadArrivalData() {
     reader.readAsText(file, 'Shift_JIS');
 }
 
-// CSVデータを解析
+// CSVデータを解析（ヘッダーなしモード）
 function parseArrivalCSVData(csvText) {
     try {
         showArrivalStatus('データを解析中...', 'info');
 
-        // ヘッダー行の問題を修正
-        const lines = csvText.split(/\r?\n/);
-        if (lines.length > 0) {
-            const originalHeader = lines[0];
-
-            console.log('=== ヘッダー修正 ===');
-            console.log('元のヘッダー長さ:', originalHeader.length);
-
-            // 問題のある箇所を探す
-            const problematicPattern = originalHeader.indexOf('注文書番号');
-            if (problematicPattern !== -1) {
-                const snippet = originalHeader.substring(problematicPattern, problematicPattern + 100);
-                console.log('注文書番号周辺:', snippet);
-            }
-
-            // 複数のパターンを試す
-            let fixedHeader = originalHeader
-                .replace('"注文書番号"_1,"発注先コード"', '"注文書番号_1","発注先コード"')
-                .replace('","注文書番号"_1,"発注先コード', '","注文書番号_1","発注先コード')
-                .replace('"注文書番号""_1,""発注先コード"', '"注文書番号_1","発注先コード"');
-
-            if (originalHeader !== fixedHeader) {
-                console.log('ヘッダーを修正しました');
-                console.log('修正後の長さ:', fixedHeader.length);
-            } else {
-                console.log('警告: ヘッダーの修正が適用されませんでした');
-            }
-
-            lines[0] = fixedHeader;
-            csvText = lines.join('\n');
-        }
-
         Papa.parse(csvText, {
-            header: true,
+            header: false, // ヘッダーを使わずに配列として解析
             skipEmptyLines: true,
             quoteChar: '"',
             escapeChar: '"',
             delimiter: ',',
-            // newlineは自動検出に任せる（データ内改行対応のため）
             dynamicTyping: false,
             complete: function(results) {
-                console.log('=== 入荷待ちPapaParse解析結果 ===');
-                console.log('エラー:', results.errors);
-                console.log('メタ情報:', results.meta);
-                console.log('データ行数:', results.data.length);
+                console.log('=== 入荷待ちCSV解析結果（配列モード） ===');
+                console.log('総行数:', results.data.length);
+                console.log('エラー数:', results.errors.length);
 
-                if (results.errors && results.errors.length > 0) {
-                    console.warn('パース時の警告（最初の10件）:', results.errors.slice(0, 10));
+                if (results.data.length < 2) {
+                    showArrivalStatus('データが不足しています', 'error');
+                    return;
                 }
 
-                // 最後の行の__parsed_extraをチェック
-                if (results.data.length > 0) {
-                    const firstRow = results.data[0];
-                    if (firstRow.__parsed_extra) {
-                        console.warn('警告: 列数の不一致が検出されました。余分なデータ:', firstRow.__parsed_extra);
+                // ヘッダー行を取得
+                const headerRow = results.data[0];
+                console.log('ヘッダー列数:', headerRow.length);
+                console.log('ヘッダー（最初の10列）:', headerRow.slice(0, 10));
+
+                // 必要な列のインデックスを探す
+                const dateColIndex = headerRow.indexOf('最終入荷予定日');
+                const addressColIndex = headerRow.indexOf('発注納入先住所');
+                const quantityColIndex = headerRow.indexOf('数量');
+
+                console.log('列インデックス:');
+                console.log('  最終入荷予定日:', dateColIndex);
+                console.log('  発注納入先住所:', addressColIndex);
+                console.log('  数量:', quantityColIndex);
+
+                if (dateColIndex === -1 || addressColIndex === -1 || quantityColIndex === -1) {
+                    showArrivalStatus('必要な列が見つかりません', 'error');
+                    console.error('列が見つかりません。ヘッダー全体:', headerRow);
+                    return;
+                }
+
+                // データ行をオブジェクトに変換
+                arrivalData = [];
+                for (let i = 1; i < results.data.length; i++) {
+                    const row = results.data[i];
+                    if (row.length > Math.max(dateColIndex, addressColIndex, quantityColIndex)) {
+                        arrivalData.push({
+                            '最終入荷予定日': row[dateColIndex] || '',
+                            '発注納入先住所': row[addressColIndex] || '',
+                            '数量': row[quantityColIndex] || '0'
+                        });
                     }
-                    console.log('1行目の列数:', Object.keys(firstRow).length);
                 }
 
-                arrivalData = results.data;
+                console.log('変換後のデータ行数:', arrivalData.length);
+                console.log('サンプル（最初の3行）:');
+                arrivalData.slice(0, 3).forEach((row, i) => {
+                    console.log(`  ${i + 1}:`, row);
+                });
+
                 processArrivalData();
             },
             error: function(error) {
@@ -3304,21 +3301,8 @@ function processArrivalData() {
         return;
     }
 
-    // デバッグ: ヘッダー情報を出力
-    if (arrivalData.length > 0) {
-        console.log('=== 入荷待ちCSVヘッダー情報 ===');
-        console.log('利用可能な列名:', Object.keys(arrivalData[0]));
-        console.log('サンプルデータ（1行目）:', arrivalData[0]);
-
-        // 住所関連の列を全て表示
-        const firstRow = arrivalData[0];
-        console.log('\n=== 住所関連フィールドの詳細 ===');
-        console.log('発注納入先郵便番号:', firstRow['発注納入先郵便番号']);
-        console.log('発注納入先住所:', firstRow['発注納入先住所']);
-        console.log('要求納入先住所:', firstRow['要求納入先住所']);
-        console.log('最終入荷予定日:', firstRow['最終入荷予定日']);
-        console.log('数量:', firstRow['数量']);
-    }
+    console.log('=== データ処理開始 ===');
+    console.log('処理対象データ数:', arrivalData.length);
 
     loadWarehouseMappings();
 

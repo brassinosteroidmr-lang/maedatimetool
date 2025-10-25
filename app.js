@@ -418,12 +418,11 @@ function getShipmentQuantityForDate(year, month, day) {
 
     shipmentData.forEach(row => {
         const dateStr = row['出荷希望日'] || '';
-        const warehouse = row['倉庫'] || '';
+        const warehouse = row['倉庫名'] || '';
 
         // 選択中の倉庫のデータのみ集計
         if (dateStr === targetDate && warehouse === currentWarehouse) {
-            const quantity = parseInt(row['数行数'] || '0');
-            totalQuantity += quantity;
+            totalQuantity += 1; // 行数をカウント
         }
     });
 

@@ -3236,16 +3236,37 @@ function processArrivalData() {
 
     // 倉庫ごとにデータを集計
     const warehouseData = {};
+    let processedCount = 0;
+    let skippedCount = 0;
+    const skippedReasons = {};
 
-    arrivalData.forEach(row => {
+    arrivalData.forEach((row, index) => {
         const address = row['発注納入先住所'] || '';
         const dateStr = row['最終入荷予定日'] || '';
         const quantityStr = row['数量'] || '0';
 
-        if (!dateStr) return;
+        // デバッグ: 最初の5件の詳細情報を出力
+        if (index < 5) {
+            console.log(`データ${index + 1}件目:`, {
+                住所: address,
+                最終入荷予定日: dateStr,
+                数量: quantityStr
+            });
+        }
+
+        if (!dateStr) {
+            skippedCount++;
+            skippedReasons['日付なし'] = (skippedReasons['日付なし'] || 0) + 1;
+            return;
+        }
 
         const warehouse = detectWarehouseFromAddress(address);
         const quantity = parseInt(quantityStr) || 0;
+
+        // デバッグ: 最初の5件の倉庫判定結果を出力
+        if (index < 5) {
+            console.log(`  → 倉庫判定: ${warehouse}`);
+        }
 
         if (!warehouseData[warehouse]) {
             warehouseData[warehouse] = {};
@@ -3256,7 +3277,14 @@ function processArrivalData() {
         }
 
         warehouseData[warehouse][dateStr] += quantity;
+        processedCount++;
     });
+
+    console.log(`処理結果: 処理済み ${processedCount}件、スキップ ${skippedCount}件`);
+    if (Object.keys(skippedReasons).length > 0) {
+        console.log('スキップ理由:', skippedReasons);
+    }
+    console.log('倉庫別データ件数:', Object.keys(warehouseData).map(w => `${w}: ${Object.keys(warehouseData[w]).length}日分`));
 
     allArrivalWarehouses = Object.keys(warehouseData).sort();
 

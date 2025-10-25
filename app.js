@@ -409,7 +409,7 @@ function checkDateHasWork(year, month, day) {
     });
 }
 
-// 指定日の出荷データ数量を取得（全倉庫）
+// 指定日の出荷データ数量を取得（選択中の倉庫のみ）
 function getShipmentQuantityForDate(year, month, day) {
     if (!shipmentData) return 0;
 
@@ -418,17 +418,20 @@ function getShipmentQuantityForDate(year, month, day) {
 
     shipmentData.forEach(row => {
         const dateStr = row['出荷希望日'] || '';
+        const warehouse = row['倉庫名'] || '';
 
-        // 全倉庫のデータを集計
+        // 選択中の倉庫がある場合はそのデータのみ、なければ全倉庫を集計
         if (dateStr === targetDate) {
-            totalQuantity += 1; // 行数をカウント
+            if (!currentWarehouse || warehouse === currentWarehouse) {
+                totalQuantity += 1; // 行数をカウント
+            }
         }
     });
 
     return totalQuantity;
 }
 
-// 指定日の入荷待ちデータ数量を取得（全倉庫）
+// 指定日の入荷待ちデータ数量を取得（選択中の倉庫のみ）
 function getArrivalQuantityForDate(year, month, day) {
     if (!arrivalData) return 0;
 
@@ -437,14 +440,18 @@ function getArrivalQuantityForDate(year, month, day) {
 
     arrivalData.forEach(row => {
         const dateStr = row['最終入荷予定日'] || '';
+        const address = row['発注納入先住所'] || '';
+        const warehouse = detectWarehouseFromAddress(address);
 
         // 日付フォーマットを正規化（YYYY/MM/DD形式に統一）
         const normalizedDateStr = normalizeDateString(dateStr);
 
-        // 全倉庫のデータを集計
+        // 選択中の倉庫がある場合はそのデータのみ、なければ全倉庫を集計
         if (normalizedDateStr === targetDateStr) {
-            const quantity = parseInt(row['数量'] || '0');
-            totalQuantity += quantity;
+            if (!currentArrivalWarehouse || warehouse === currentArrivalWarehouse) {
+                const quantity = parseInt(row['数量'] || '0');
+                totalQuantity += quantity;
+            }
         }
     });
 
@@ -2938,11 +2945,11 @@ function switchWarehouse(warehouse) {
         }
     });
 
-    // カレンダーを更新（統合表示のため常に更新）
-    renderSixMonthCalendar();
-
     // グラフを再描画
     renderChart(warehouse);
+
+    // カレンダーを更新（選択倉庫のデータを反映）
+    renderSixMonthCalendar();
 }
 
 // 期間ナビゲーション: 前へ

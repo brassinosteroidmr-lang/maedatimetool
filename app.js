@@ -3277,6 +3277,15 @@ function processArrivalData() {
         console.log('=== 入荷待ちCSVヘッダー情報 ===');
         console.log('利用可能な列名:', Object.keys(arrivalData[0]));
         console.log('サンプルデータ（1行目）:', arrivalData[0]);
+
+        // 住所関連の列を全て表示
+        const firstRow = arrivalData[0];
+        console.log('\n=== 住所関連フィールドの詳細 ===');
+        console.log('発注納入先郵便番号:', firstRow['発注納入先郵便番号']);
+        console.log('発注納入先住所:', firstRow['発注納入先住所']);
+        console.log('要求納入先住所:', firstRow['要求納入先住所']);
+        console.log('最終入荷予定日:', firstRow['最終入荷予定日']);
+        console.log('数量:', firstRow['数量']);
     }
 
     loadWarehouseMappings();

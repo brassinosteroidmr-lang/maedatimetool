@@ -2668,6 +2668,11 @@ function importAllSettings() {
 // 出荷データ可視化機能
 // ========================================
 
+// Chart.js プラグインの登録
+if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+    Chart.register(ChartDataLabels);
+}
+
 // グローバル変数
 let shipmentData = null; // 読み込んだCSVデータ
 let shipmentChart = null; // Chart.jsインスタンス

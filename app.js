@@ -594,8 +594,18 @@ function renderSingleMonth(year, month) {
 
         if (shipmentQty > 0) {
             const barWidth = (shipmentQty / maxValue) * 100;
-            dataBars += `<div class="calendar-data-bar shipment-bar" style="width: ${barWidth}%" title="出荷: ${shipmentQty}行">
-                <span class="bar-label">📦${shipmentQty}</span>
+
+            // キャパシティチェック
+            const capacity = currentWarehouse && currentWarehouse in warehouseCapacities
+                ? warehouseCapacities[currentWarehouse]
+                : null;
+            const isOverCapacity = capacity !== null && shipmentQty > capacity;
+            const capacityClass = isOverCapacity ? ' over-capacity' : '';
+            const capacityInfo = capacity !== null ? ` / キャパ: ${capacity}` : '';
+            const warningIcon = isOverCapacity ? '<span class="capacity-warning-icon" title="キャパシティ超過">⚠️</span>' : '';
+
+            dataBars += `<div class="calendar-data-bar shipment-bar${capacityClass}" style="width: ${barWidth}%" title="出荷: ${shipmentQty}行${capacityInfo}">
+                <span class="bar-label">📦${shipmentQty}${warningIcon}</span>
             </div>`;
         }
 

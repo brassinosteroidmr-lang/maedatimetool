@@ -3059,6 +3059,21 @@ body {
         rgba(251, 146, 60, 0.6) 100%);
 }
 
+/* キャパシティ超過時の入荷バー */
+.arrival-bar.over-capacity {
+    background: linear-gradient(90deg,
+        rgba(239, 68, 68, 0.4) 0%,
+        rgba(239, 68, 68, 0.6) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.8);
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+}
+
+.arrival-bar.over-capacity:hover {
+    background: linear-gradient(90deg,
+        rgba(239, 68, 68, 0.5) 0%,
+        rgba(239, 68, 68, 0.7) 100%);
+}
+
 /* バーラベル */
 .bar-label {
     font-size: 9px;

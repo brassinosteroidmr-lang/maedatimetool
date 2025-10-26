@@ -611,8 +611,18 @@ function renderSingleMonth(year, month) {
 
         if (arrivalQty > 0) {
             const barWidth = (arrivalQty / arrivalQty) * 100; // 入荷は独立して表示
-            dataBars += `<div class="calendar-data-bar arrival-bar" style="width: ${barWidth}%" title="入荷: ${arrivalQty}個">
-                <span class="bar-label">📥${arrivalQty}</span>
+
+            // キャパシティチェック（入荷）
+            const arrivalCapacity = currentArrivalWarehouse && currentArrivalWarehouse in arrivalWarehouseCapacities
+                ? arrivalWarehouseCapacities[currentArrivalWarehouse]
+                : null;
+            const isArrivalOverCapacity = arrivalCapacity !== null && arrivalQty > arrivalCapacity;
+            const arrivalCapacityClass = isArrivalOverCapacity ? ' over-capacity' : '';
+            const arrivalCapacityInfo = arrivalCapacity !== null ? ` / キャパ: ${arrivalCapacity}` : '';
+            const arrivalWarningIcon = isArrivalOverCapacity ? '<span class="capacity-warning-icon" title="キャパシティ超過">⚠️</span>' : '';
+
+            dataBars += `<div class="calendar-data-bar arrival-bar${arrivalCapacityClass}" style="width: ${barWidth}%" title="入荷: ${arrivalQty}個${arrivalCapacityInfo}">
+                <span class="bar-label">📥${arrivalQty}${arrivalWarningIcon}</span>
             </div>`;
         }
 
@@ -2562,7 +2572,9 @@ function exportAllSettings() {
             templateSettings: JSON.parse(localStorage.getItem('template-settings') || 'null'),
             inventoryMemo: localStorage.getItem('inventory-memo') || '',
             orderList: JSON.parse(localStorage.getItem('order-list') || '[]'),
-            warehouseCapacities: JSON.parse(localStorage.getItem('warehouse-capacities') || '{}')
+            warehouseCapacities: JSON.parse(localStorage.getItem('warehouse-capacities') || '{}'),
+            warehouseMappings: JSON.parse(localStorage.getItem('warehouseMappings') || '{}'),
+            arrivalWarehouseCapacities: JSON.parse(localStorage.getItem('arrivalWarehouseCapacities') || '{}')
         }
     };
 
@@ -2645,6 +2657,22 @@ function importAllSettings() {
                     // グラフが表示されている場合は再描画
                     if (currentWarehouse) {
                         renderChart(currentWarehouse);
+                    }
+                }
+
+                if (settings.warehouseMappings) {
+                    localStorage.setItem('warehouseMappings', JSON.stringify(settings.warehouseMappings));
+                    // グローバル変数も更新
+                    warehouseMappings = settings.warehouseMappings;
+                }
+
+                if (settings.arrivalWarehouseCapacities) {
+                    localStorage.setItem('arrivalWarehouseCapacities', JSON.stringify(settings.arrivalWarehouseCapacities));
+                    // グローバル変数も更新
+                    arrivalWarehouseCapacities = settings.arrivalWarehouseCapacities;
+                    // グラフが表示されている場合は再描画
+                    if (currentArrivalWarehouse) {
+                        updateArrivalChart();
                     }
                 }
 
@@ -3185,6 +3213,7 @@ let currentArrivalWarehouse = null; // 現在表示中の倉庫
 let currentArrivalPeriodOffset = 0; // 表示期間のオフセット
 let allArrivalWarehouses = []; // 全倉庫リスト
 let warehouseMappings = {}; // 倉庫マッピング設定
+let arrivalWarehouseCapacities = {}; // 入荷待ち倉庫別キャパシティ設定
 
 // 倉庫マッピング設定を読み込む
 function loadWarehouseMappings() {
@@ -3201,11 +3230,18 @@ function loadWarehouseMappings() {
             '福岡倉庫': '福岡県'
         };
     }
+
+    // 入荷キャパシティ設定を読み込む
+    const savedCapacities = localStorage.getItem('arrivalWarehouseCapacities');
+    if (savedCapacities) {
+        arrivalWarehouseCapacities = JSON.parse(savedCapacities);
+    }
 }
 
 // 倉庫マッピング設定を保存
 function saveWarehouseMappings() {
     localStorage.setItem('warehouseMappings', JSON.stringify(warehouseMappings));
+    localStorage.setItem('arrivalWarehouseCapacities', JSON.stringify(arrivalWarehouseCapacities));
 }
 
 // 住所から倉庫を判定
@@ -3509,17 +3545,52 @@ function drawArrivalChart(dates, quantities) {
         arrivalChart.destroy();
     }
 
+    // データセットを構築
+    const datasets = [{
+        label: '入荷待ち数量',
+        data: quantities,
+        backgroundColor: 'rgba(90, 159, 212, 0.7)',
+        borderColor: 'rgba(90, 159, 212, 1)',
+        borderWidth: 1,
+        datalabels: {
+            anchor: 'end',
+            align: 'top',
+            color: '#e8e8e8',
+            font: {
+                weight: 'bold',
+                size: 11
+            },
+            formatter: function(value) {
+                return value > 0 ? value : '';
+            }
+        }
+    }];
+
+    // キャパシティラインを追加（倉庫が選択されている場合）
+    if (currentArrivalWarehouse && currentArrivalWarehouse in arrivalWarehouseCapacities) {
+        const capacity = arrivalWarehouseCapacities[currentArrivalWarehouse];
+        if (capacity !== null) {
+            datasets.push({
+                label: 'キャパシティ',
+                data: Array(dates.length).fill(capacity),
+                type: 'line',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                fill: false,
+                pointRadius: 0,
+                datalabels: {
+                    display: false
+                }
+            });
+        }
+    }
+
     arrivalChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: dates,
-            datasets: [{
-                label: '入荷待ち数量',
-                data: quantities,
-                backgroundColor: 'rgba(90, 159, 212, 0.7)',
-                borderColor: 'rgba(90, 159, 212, 1)',
-                borderWidth: 1
-            }]
+            datasets: datasets
         },
         options: {
             responsive: true,
@@ -3609,9 +3680,13 @@ function openWarehouseMappingSettings() {
     for (const [name, keyword] of Object.entries(warehouseMappings)) {
         const nameInput = document.getElementById(`warehouse-${index}-name`);
         const keywordInput = document.getElementById(`warehouse-${index}-keyword`);
+        const capacityInput = document.getElementById(`warehouse-${index}-arrival-capacity`);
         if (nameInput && keywordInput) {
             nameInput.value = name;
             keywordInput.value = keyword;
+            if (capacityInput && name in arrivalWarehouseCapacities) {
+                capacityInput.value = arrivalWarehouseCapacities[name];
+            }
         }
         index++;
         if (index > 5) break;
@@ -3628,13 +3703,23 @@ function closeWarehouseMappingModal() {
 // 倉庫マッピング設定を保存
 function saveWarehouseMappingSettings() {
     warehouseMappings = {};
+    arrivalWarehouseCapacities = {};
 
     for (let i = 1; i <= 5; i++) {
         const nameInput = document.getElementById(`warehouse-${i}-name`);
         const keywordInput = document.getElementById(`warehouse-${i}-keyword`);
+        const capacityInput = document.getElementById(`warehouse-${i}-arrival-capacity`);
 
         if (nameInput && keywordInput && nameInput.value && keywordInput.value) {
             warehouseMappings[nameInput.value] = keywordInput.value;
+
+            // キャパシティ設定を保存（空欄の場合はnull）
+            if (capacityInput && capacityInput.value) {
+                const capacityValue = parseInt(capacityInput.value);
+                arrivalWarehouseCapacities[nameInput.value] = isNaN(capacityValue) ? null : capacityValue;
+            } else {
+                arrivalWarehouseCapacities[nameInput.value] = null;
+            }
         }
     }
 

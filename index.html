@@ -383,7 +383,7 @@
             </div>
             <div class="capacity-modal-body">
                 <p style="margin-bottom: 15px; color: #b0b0b0; font-size: 13px;">
-                    発注納入先住所の一部文字列で倉庫を判定します。各倉庫のキーワードを設定してください。
+                    発注納入先住所の一部文字列で倉庫を判定します。各倉庫のキーワードとキャパシティを設定してください。
                 </p>
                 <div class="warehouse-mapping-inputs" id="warehouse-mapping-inputs">
                     <div class="warehouse-mapping-item">
@@ -391,30 +391,40 @@
                         <input type="text" id="warehouse-1-name" class="warehouse-name-input" placeholder="例: MCUD神戸西倉庫">
                         <label>判定キーワード:</label>
                         <input type="text" id="warehouse-1-keyword" class="warehouse-keyword-input" placeholder="例: 兵庫県神戸市須磨区弥栄台">
+                        <label>入荷キャパシティ:</label>
+                        <input type="number" id="warehouse-1-arrival-capacity" class="warehouse-capacity-input" placeholder="例: 100">
                     </div>
                     <div class="warehouse-mapping-item">
                         <label>倉庫2 名称:</label>
                         <input type="text" id="warehouse-2-name" class="warehouse-name-input" placeholder="例: 横浜倉庫">
                         <label>判定キーワード:</label>
                         <input type="text" id="warehouse-2-keyword" class="warehouse-keyword-input" placeholder="例: 神奈川県横浜市">
+                        <label>入荷キャパシティ:</label>
+                        <input type="number" id="warehouse-2-arrival-capacity" class="warehouse-capacity-input" placeholder="例: 100">
                     </div>
                     <div class="warehouse-mapping-item">
                         <label>倉庫3 名称:</label>
                         <input type="text" id="warehouse-3-name" class="warehouse-name-input" placeholder="例: 大阪倉庫">
                         <label>判定キーワード:</label>
                         <input type="text" id="warehouse-3-keyword" class="warehouse-keyword-input" placeholder="例: 大阪府">
+                        <label>入荷キャパシティ:</label>
+                        <input type="number" id="warehouse-3-arrival-capacity" class="warehouse-capacity-input" placeholder="例: 100">
                     </div>
                     <div class="warehouse-mapping-item">
                         <label>倉庫4 名称:</label>
                         <input type="text" id="warehouse-4-name" class="warehouse-name-input" placeholder="例: 名古屋倉庫">
                         <label>判定キーワード:</label>
                         <input type="text" id="warehouse-4-keyword" class="warehouse-keyword-input" placeholder="例: 愛知県名古屋市">
+                        <label>入荷キャパシティ:</label>
+                        <input type="number" id="warehouse-4-arrival-capacity" class="warehouse-capacity-input" placeholder="例: 100">
                     </div>
                     <div class="warehouse-mapping-item">
                         <label>倉庫5 名称:</label>
                         <input type="text" id="warehouse-5-name" class="warehouse-name-input" placeholder="例: 福岡倉庫">
                         <label>判定キーワード:</label>
                         <input type="text" id="warehouse-5-keyword" class="warehouse-keyword-input" placeholder="例: 福岡県">
+                        <label>入荷キャパシティ:</label>
+                        <input type="number" id="warehouse-5-arrival-capacity" class="warehouse-capacity-input" placeholder="例: 100">
                     </div>
                 </div>
             </div>

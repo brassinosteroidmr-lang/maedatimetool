@@ -203,51 +203,53 @@
             </div>
 
 
-            <!-- 出荷データ可視化セクション -->
-            <div class="shipment-section">
-                <section class="template-section">
-                    <div class="shipment-chart-section">
-                        <div class="template-header">
-                            <h3>出荷データ可視化</h3>
-                            <button onclick="openCapacitySettings()" class="template-settings-btn" title="キャパシティ設定" id="capacity-settings-btn" style="display: none;">⚙</button>
-                        </div>
-                        <div class="shipment-chart-content">
-                            <!-- CSVファイル選択 -->
-                            <div class="csv-select-group">
-                                <label class="csv-label">CSVファイルパス:</label>
-                                <input type="text" id="csv-path-input" class="csv-path-input"
-                                       value="N:\業務本部\資材課\0-00_総合\ダッシュボード\出荷指示明細リスト.csv" readonly>
-                                <input type="file" id="csv-file-input" accept=".csv" style="display: none;" onchange="handleCSVFileSelect(event)">
-                                <button onclick="document.getElementById('csv-file-input').click()" class="csv-select-btn">📁 ファイル選択</button>
-                                <button onclick="loadShipmentData()" class="csv-load-btn">📊 データ読込</button>
+            <!-- 出荷・入荷グラフラッパー（レスポンシブ対応） -->
+            <div class="charts-wrapper">
+                <!-- 出荷データ可視化セクション -->
+                <div class="shipment-section">
+                    <section class="template-section">
+                        <div class="shipment-chart-section">
+                            <div class="template-header">
+                                <h3>出荷データ可視化</h3>
+                                <button onclick="openCapacitySettings()" class="template-settings-btn" title="キャパシティ設定" id="capacity-settings-btn" style="display: none;">⚙</button>
                             </div>
+                            <div class="shipment-chart-content">
+                                <!-- CSVファイル選択 -->
+                                <div class="csv-select-group">
+                                    <label class="csv-label">CSVファイルパス:</label>
+                                    <input type="text" id="csv-path-input" class="csv-path-input"
+                                           value="N:\業務本部\資材課\0-00_総合\ダッシュボード\出荷指示明細リスト.csv" readonly>
+                                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;" onchange="handleCSVFileSelect(event)">
+                                    <button onclick="document.getElementById('csv-file-input').click()" class="csv-select-btn">📁 ファイル選択</button>
+                                    <button onclick="loadShipmentData()" class="csv-load-btn">📊 データ読込</button>
+                                </div>
 
-                            <!-- ステータス表示 -->
-                            <div id="shipment-status" class="shipment-status"></div>
+                                <!-- ステータス表示 -->
+                                <div id="shipment-status" class="shipment-status"></div>
 
-                            <!-- タブとナビゲーション -->
-                            <div class="chart-controls" id="chart-controls" style="display: none;">
-                                <div class="warehouse-tabs" id="warehouse-tabs"></div>
-                                <div class="chart-navigation">
-                                    <button onclick="previousPeriod()" class="nav-btn">◀ 前</button>
-                                    <span id="current-period" class="period-label"></span>
-                                    <button onclick="nextPeriod()" class="nav-btn">次 ▶</button>
+                                <!-- タブとナビゲーション -->
+                                <div class="chart-controls" id="chart-controls" style="display: none;">
+                                    <div class="warehouse-tabs" id="warehouse-tabs"></div>
+                                    <div class="chart-navigation">
+                                        <button onclick="previousPeriod()" class="nav-btn">◀ 前</button>
+                                        <span id="current-period" class="period-label"></span>
+                                        <button onclick="nextPeriod()" class="nav-btn">次 ▶</button>
+                                    </div>
+                                </div>
+
+                                <!-- グラフ -->
+                                <div class="chart-and-table" id="chart-and-table" style="display: none;">
+                                    <div class="chart-container" id="chart-container">
+                                        <canvas id="shipment-chart"></canvas>
+                                    </div>
                                 </div>
                             </div>
-
-                            <!-- グラフ -->
-                            <div class="chart-and-table" id="chart-and-table" style="display: none;">
-                                <div class="chart-container" id="chart-container">
-                                    <canvas id="shipment-chart"></canvas>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                </section>
-            </div>
+                    </section>
+                </div>
 
-            <!-- 入荷待ちデータ可視化セクション -->
-            <div class="arrival-section">
+                <!-- 入荷待ちデータ可視化セクション -->
+                <div class="arrival-section">
                 <section class="template-section">
                     <div class="arrival-chart-section">
                         <div class="template-header">
@@ -287,6 +289,7 @@
                         </div>
                     </div>
                 </section>
+                </div>
             </div>
 
             <!-- 下段: カレンダー -->
@@ -303,16 +306,25 @@
                         </div>
                         <div class="calendar-legend">
                             <div class="legend-item">
-                                <div class="legend-indicator work-indicator"></div>
-                                <span>業務記録</span>
+                                <input type="checkbox" id="toggle-work-records" class="legend-toggle" checked onchange="toggleCalendarDisplay()">
+                                <label for="toggle-work-records" class="legend-toggle-label">
+                                    <div class="legend-indicator work-indicator"></div>
+                                    <span>業務記録</span>
+                                </label>
                             </div>
                             <div class="legend-item">
-                                <div class="legend-bar shipment-bar-sample"></div>
-                                <span>📦 出荷数</span>
+                                <input type="checkbox" id="toggle-shipment" class="legend-toggle" checked onchange="toggleCalendarDisplay()">
+                                <label for="toggle-shipment" class="legend-toggle-label">
+                                    <div class="legend-bar shipment-bar-sample"></div>
+                                    <span>📦 出荷数</span>
+                                </label>
                             </div>
                             <div class="legend-item">
-                                <div class="legend-bar arrival-bar-sample"></div>
-                                <span>📥 入荷数</span>
+                                <input type="checkbox" id="toggle-arrival" class="legend-toggle" checked onchange="toggleCalendarDisplay()">
+                                <label for="toggle-arrival" class="legend-toggle-label">
+                                    <div class="legend-bar arrival-bar-sample"></div>
+                                    <span>📥 入荷数</span>
+                                </label>
                             </div>
                         </div>
                         <div class="delivery-calculator">

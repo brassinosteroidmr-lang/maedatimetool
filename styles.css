@@ -8,15 +8,19 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
     background: #1a1a1a;
     min-height: 100vh;
-    padding: 20px;
+    padding: 10px;
     color: #e8e8e8;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
 }
 
 .container {
     max-width: 1800px;
     margin: 0 auto;
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
 }
 
 /* ヘッダー */
@@ -68,6 +72,8 @@ body {
     border: 1px solid #3a3a3a;
     padding: 20px;
     margin-bottom: 20px;
+    min-width: 0; /* オーバーフロー防止 */
+    overflow: visible; /* 子要素でコントロール */
 }
 
 /* 左側: 時計と砂時計エリア */
@@ -135,6 +141,8 @@ body {
 /* 右側: 業務記録エリア */
 .business-record-area {
     width: 100%;
+    min-width: 0; /* オーバーフロー防止 */
+    overflow: hidden; /* はみ出し防止 */
 }
 
 .news-section h2, .calendar-section h2, .tools-section h2, .time-record-section h2 {
@@ -485,6 +493,7 @@ body {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
+    width: 100%;
     /* スクロールなしで全体表示 */
 }
 
@@ -1942,12 +1951,17 @@ body {
     grid-template-columns: repeat(2, 1fr);
     gap: 6px;
     margin-bottom: 12px;
+    width: 100%;
 }
 
 .quick-task-btn {
     padding: 8px;
     background: #3a3a3a;
     color: #c8c8c8;
+    min-width: 0; /* オーバーフロー防止 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     border: 1px solid #4a4a4a;
     cursor: pointer;
     font-size: 11px;
@@ -1991,10 +2005,12 @@ body {
     margin-bottom: 12px;
     padding-top: 8px;
     border-top: 1px solid #3a3a3a;
+    width: 100%;
 }
 
 .add-task-button input {
     flex: 1;
+    min-width: 0; /* オーバーフロー防止 */
     padding: 6px;
     border: 1px solid #3a3a3a;
     background: #1a1a1a;
@@ -2093,8 +2109,9 @@ body {
 }
 
 .record-list {
-    max-height: 150px;
+    max-height: 200px;
     overflow-y: auto;
+    width: 100%;
 }
 
 .record-item {
@@ -2103,6 +2120,9 @@ body {
     padding: 6px 8px;
     margin-bottom: 4px;
     font-size: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -2364,6 +2384,7 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+    width: 100%;
 }
 
 /* 左列（砂時計＋定型文） */
@@ -2372,6 +2393,7 @@ body {
     flex-direction: column;
     height: 100%;
     gap: 0;
+    min-width: 0; /* オーバーフロー防止 */
 }
 
 /* 砂時計セクション（2/3の高さ） */
@@ -2379,17 +2401,21 @@ body {
     flex: 2;
     min-height: 0;
     margin-bottom: 20px;
+    overflow: hidden; /* はみ出し防止 */
 }
 
 /* コンパクト定型文セクション（1/3の高さ） */
 .template-compact-section {
     flex: 1;
     min-height: 0;
+    overflow: hidden; /* はみ出し防止 */
 }
 
 /* 定型文セクション */
 .template-text-section {
     width: 100%;
+    min-width: 0; /* オーバーフロー防止 */
+    overflow: hidden; /* はみ出し防止 */
 }
 
 .template-header {
@@ -2428,21 +2454,22 @@ body {
 }
 
 .template-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 8px;
-    max-height: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 250px;
     overflow-y: auto;
 }
 
 .template-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     background: #232323;
     border: 1px solid #3a3a3a;
     padding: 6px 8px;
     transition: all 0.3s;
+    min-height: 32px;
 }
 
 .template-item:hover {
@@ -2457,6 +2484,7 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    cursor: pointer;
 }
 
 .template-copy-btn {
@@ -2945,10 +2973,6 @@ body {
     gap: 2px;
 }
 
-.calendar-day-number {
-    font-size: 13px;
-}
-
 .calendar-data-label {
     font-size: 10px;
     font-weight: 600;
@@ -2975,6 +2999,19 @@ body {
     background: #4ade80;
     border-radius: 50%;
     box-shadow: 0 0 4px rgba(74, 222, 128, 0.5);
+}
+
+/* カレンダー表示切り替え */
+#calendar-container.hide-work-records .calendar-work-indicator {
+    display: none;
+}
+
+#calendar-container.hide-shipment .shipment-bar {
+    display: none;
+}
+
+#calendar-container.hide-arrival .arrival-bar {
+    display: none;
 }
 
 /* データバーコンテナ */
@@ -3076,11 +3113,12 @@ body {
 
 /* バーラベル */
 .bar-label {
-    font-size: 9px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 700;
     color: #ffffff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
     white-space: nowrap;
+    letter-spacing: 0.3px;
 }
 
 /* カレンダーの日付セルを少し大きく */
@@ -3096,9 +3134,10 @@ body {
 }
 
 .calendar-day-number {
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
     margin-bottom: 2px;
+    color: #d8d8d8;
 }
 
 /* カレンダー凡例 */
@@ -3115,6 +3154,25 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+.legend-toggle {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: #4ade80;
+}
+
+.legend-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.legend-toggle-label:hover {
+    color: #d0d0d0;
 }
 
 .legend-indicator {
@@ -3149,17 +3207,51 @@ body {
 }
 
 /* ========================================
+   出荷・入荷グラフラッパー（レスポンシブ対応）
+   ======================================== */
+.charts-wrapper {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    min-width: 0;
+}
+
+.charts-wrapper .shipment-section,
+.charts-wrapper .arrival-section {
+    flex: 1;
+    min-width: 0; /* flexアイテムの最小幅を0に設定してオーバーフローを防止 */
+    overflow: hidden;
+}
+
+/* 画面幅1400px以下で縦並びに切り替え */
+@media (max-width: 1400px) {
+    .charts-wrapper {
+        flex-direction: column;
+    }
+
+    .charts-wrapper .shipment-section,
+    .charts-wrapper .arrival-section {
+        width: 100%;
+    }
+}
+
+/* ========================================
    出荷データ可視化セクション
    ======================================== */
 
-.shipment-chart-section {
+.shipment-chart-section,
+.arrival-chart-section {
     width: 100%;
+    min-width: 0;
 }
 
-.shipment-chart-content {
+.shipment-chart-content,
+.arrival-chart-content {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    width: 100%;
+    min-width: 0;
 }
 
 /* CSVファイル選択 */
@@ -3178,13 +3270,17 @@ body {
 
 .csv-path-input {
     flex: 1;
-    min-width: 300px;
+    min-width: 0;
+    max-width: 100%;
     padding: 8px 12px;
     font-size: 12px;
     background: #1a1a1a;
     border: 1px solid #3a3a3a;
     color: #d0d0d0;
     border-radius: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .csv-select-btn,
@@ -3305,6 +3401,8 @@ body {
     gap: 5px;
     border-bottom: 1px solid #3a3a3a;
     padding-bottom: 5px;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 .warehouse-tab {
@@ -3337,6 +3435,8 @@ body {
     align-items: center;
     gap: 20px;
     margin-top: 15px;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 .chart-navigation {
@@ -3348,8 +3448,10 @@ body {
 .period-label {
     font-size: 13px;
     color: #c0c0c0;
-    min-width: 150px;
+    font-weight: 600;
+    min-width: 100px;
     text-align: center;
+    white-space: nowrap;
 }
 
 /* グラフ */
@@ -3365,9 +3467,13 @@ body {
     border: 1px solid #3a3a3a;
     border-radius: 4px;
     width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
-#shipment-chart {
+#shipment-chart,
+#arrival-chart {
     width: 100% !important;
     height: 100% !important;
 }
@@ -3475,8 +3581,29 @@ body {
     }
 }
 
+@media (max-width: 1200px) {
+    .horizontal-sections {
+        grid-template-columns: 1fr;
+    }
+
+    #calendar-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 800px) {
+    #calendar-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
 @media (max-width: 600px) {
     .horizontal-sections {
+        grid-template-columns: 1fr;
+    }
+
+    #calendar-container {
         grid-template-columns: 1fr;
     }
 

@@ -1838,7 +1838,9 @@ const defaultTemplates = [
     '現時点では上記希望納期対応可能です',
     '現時点では在庫にて上記希望納期対応可能です',
     'PN登録中',
-    '納期確認中'
+    '納期確認中',
+    'メーカー確認中',
+    '手配完了'
 ];
 
 // 定型文設定の取得
@@ -1942,6 +1944,12 @@ function openTemplateSettings() {
                 <label>定型文 4:</label>
                 <input type="text" id="template-4" value="${settings.templates[3] || ''}" class="edit-input" placeholder="納期確認中">
 
+                <label>定型文 5:</label>
+                <input type="text" id="template-5" value="${settings.templates[4] || ''}" class="edit-input" placeholder="メーカー確認中">
+
+                <label>定型文 6:</label>
+                <input type="text" id="template-6" value="${settings.templates[5] || ''}" class="edit-input" placeholder="手配完了">
+
                 <div class="template-preview">
                     <label>プレビュー:</label>
                     <div id="template-preview-text" class="template-preview-text"></div>
@@ -1961,7 +1969,7 @@ function openTemplateSettings() {
     updateTemplatePreview();
 
     // 入力時にプレビューを更新
-    ['template-name', 'template-1', 'template-2', 'template-3', 'template-4'].forEach(id => {
+    ['template-name', 'template-1', 'template-2', 'template-3', 'template-4', 'template-5', 'template-6'].forEach(id => {
         const elem = document.getElementById(id);
         if (elem) {
             elem.addEventListener('input', updateTemplatePreview);
@@ -1990,13 +1998,15 @@ function saveTemplateSettingsFromModal() {
     const template2 = document.getElementById('template-2').value.trim();
     const template3 = document.getElementById('template-3').value.trim();
     const template4 = document.getElementById('template-4').value.trim();
+    const template5 = document.getElementById('template-5').value.trim();
+    const template6 = document.getElementById('template-6').value.trim();
 
     if (!name) {
         alert('名前を入力してください');
         return;
     }
 
-    const templates = [template1, template2, template3, template4].filter(t => t !== '');
+    const templates = [template1, template2, template3, template4, template5, template6].filter(t => t !== '');
 
     if (templates.length === 0) {
         alert('少なくとも1つの定型文を入力してください');
@@ -3196,6 +3206,31 @@ function playNotificationSound() {
         }
     } catch (error) {
         console.log('通知音の再生に失敗しました:', error);
+    }
+}
+
+// ========================================
+// カレンダー表示切り替え機能
+// ========================================
+function toggleCalendarDisplay() {
+    const showWorkRecords = document.getElementById('toggle-work-records').checked;
+    const showShipment = document.getElementById('toggle-shipment').checked;
+    const showArrival = document.getElementById('toggle-arrival').checked;
+
+    const container = document.getElementById('calendar-container');
+
+    // クラスを削除
+    container.classList.remove('hide-work-records', 'hide-shipment', 'hide-arrival');
+
+    // チェックが外れている項目に対応するクラスを追加
+    if (!showWorkRecords) {
+        container.classList.add('hide-work-records');
+    }
+    if (!showShipment) {
+        container.classList.add('hide-shipment');
+    }
+    if (!showArrival) {
+        container.classList.add('hide-arrival');
     }
 }
 

@@ -1,6 +1,9 @@
 // ========================================
-// 日本の祝日データ（2025-2026年）
+// 日本の祝日データ（2025-2028年）
 // ========================================
+const HOLIDAY_DATA_MIN_YEAR = 2025;
+const HOLIDAY_DATA_MAX_YEAR = 2028;
+
 const holidays = {
     '2025-01-01': '元日',
     '2025-01-13': '成人の日',
@@ -38,12 +41,74 @@ const holidays = {
     '2026-09-23': '秋分の日',
     '2026-10-12': 'スポーツの日',
     '2026-11-03': '文化の日',
-    '2026-11-23': '勤労感謝の日'
+    '2026-11-23': '勤労感謝の日',
+    '2027-01-01': '元日',
+    '2027-01-11': '成人の日',
+    '2027-02-11': '建国記念の日',
+    '2027-02-23': '天皇誕生日',
+    '2027-03-21': '春分の日',
+    '2027-03-22': '振替休日',
+    '2027-04-29': '昭和の日',
+    '2027-05-03': '憲法記念日',
+    '2027-05-04': 'みどりの日',
+    '2027-05-05': 'こどもの日',
+    '2027-07-19': '海の日',
+    '2027-08-11': '山の日',
+    '2027-09-20': '敬老の日',
+    '2027-09-23': '秋分の日',
+    '2027-10-11': 'スポーツの日',
+    '2027-11-03': '文化の日',
+    '2027-11-23': '勤労感謝の日',
+    '2028-01-01': '元日',
+    '2028-01-10': '成人の日',
+    '2028-02-11': '建国記念の日',
+    '2028-02-23': '天皇誕生日',
+    '2028-03-20': '春分の日',
+    '2028-04-29': '昭和の日',
+    '2028-05-03': '憲法記念日',
+    '2028-05-04': 'みどりの日',
+    '2028-05-05': 'こどもの日',
+    '2028-07-17': '海の日',
+    '2028-08-11': '山の日',
+    '2028-09-18': '敬老の日',
+    '2028-09-22': '秋分の日',
+    '2028-10-09': 'スポーツの日',
+    '2028-11-03': '文化の日',
+    '2028-11-23': '勤労感謝の日'
 };
+
+let holidayWarningShown = false;
 
 function isHoliday(year, month, day) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return holidays[dateStr];
+}
+
+function checkHolidayDataRange() {
+    const currentYear = new Date().getFullYear();
+    if (currentYear > HOLIDAY_DATA_MAX_YEAR && !holidayWarningShown) {
+        holidayWarningShown = true;
+        console.warn(`祝日データは${HOLIDAY_DATA_MAX_YEAR}年までです。納品日計算やカレンダーの祝日表示が正確でない可能性があります。`);
+        const calcResult = document.getElementById('calc-results');
+        if (calcResult) {
+            const warning = document.createElement('div');
+            warning.style.cssText = 'color: #d88888; font-size: 11px; margin-top: 4px;';
+            warning.textContent = `⚠ 祝日データは${HOLIDAY_DATA_MAX_YEAR}年まで対応`;
+            calcResult.parentElement.appendChild(warning);
+        }
+    }
+}
+
+// ========================================
+// HTMLエスケープ
+// ========================================
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // ========================================
@@ -69,7 +134,14 @@ function saveWorkTimeSettings() {
 function loadWorkTimeSettings() {
     const saved = localStorage.getItem('work-time-settings');
     if (saved) {
-        const settings = JSON.parse(saved);
+        let settings;
+        try {
+            settings = JSON.parse(saved);
+        } catch (e) {
+            console.error('勤務時間設定の読み込みに失敗:', e);
+            localStorage.removeItem('work-time-settings');
+            return;
+        }
         WORK_START_HOUR = settings.startHour;
         WORK_START_MINUTE = settings.startMinute;
         WORK_END_HOUR = settings.endHour;
@@ -370,19 +442,22 @@ function quickStartTask(taskName) {
     if (currentTask === taskName) {
         // 同じタスクをクリック = 終了
         stopTask();
-    } else if (currentTask) {
-        // 別のタスクが実行中 = 終了してから新規開始
-        stopTask();
-        setTimeout(() => {
-            startTaskWithName(taskName);
-        }, 100);
     } else {
-        // タスク開始
+        // 別のタスクが実行中なら終了してから新規開始
+        if (currentTask) {
+            stopTask();
+        }
         startTaskWithName(taskName);
     }
 }
 
 function startTaskWithName(taskName) {
+    // 安全のため既存タイマーをクリア
+    if (taskTimerInterval) {
+        clearInterval(taskTimerInterval);
+        taskTimerInterval = null;
+    }
+
     currentTask = taskName;
     taskStartTime = new Date();
 
@@ -423,7 +498,15 @@ function stopTask() {
 // クイックタスクボタンの管理
 function getQuickTasks() {
     const saved = localStorage.getItem('quick-tasks');
-    return saved ? JSON.parse(saved) : defaultQuickTasks;
+    if (saved) {
+        try {
+            return JSON.parse(saved);
+        } catch (e) {
+            console.error('クイックタスクの読み込みに失敗:', e);
+            localStorage.removeItem('quick-tasks');
+        }
+    }
+    return defaultQuickTasks;
 }
 
 function saveQuickTasks(tasks) {
@@ -475,9 +558,9 @@ function renderQuickTaskButtons() {
     tasks.forEach(task => {
         const isActive = currentTask === task ? 'active' : '';
         html += `
-            <button class="quick-task-btn ${isActive}" onclick="quickStartTask('${task}')">
-                ${task}
-                <span class="delete-btn" onclick="deleteQuickTaskButton('${task}', event)">×</span>
+            <button class="quick-task-btn ${isActive}" onclick="quickStartTask('${escapeHtml(task)}')">
+                ${escapeHtml(task)}
+                <span class="delete-btn" onclick="deleteQuickTaskButton('${escapeHtml(task)}', event)">×</span>
             </button>
         `;
     });
@@ -506,7 +589,7 @@ function renderCurrentTask() {
     if (currentTask) {
         container.innerHTML = `
             <div class="task-info">
-                記録中: ${currentTask}
+                記録中: ${escapeHtml(currentTask)}
                 <button onclick="editCurrentTask()" class="edit-current-btn" title="編集">✎</button>
             </div>
             <div class="task-timer">00:00:00</div>
@@ -551,7 +634,7 @@ function renderTaskRecords() {
 
         html += `
             <div class="record-item">
-                <div class="record-task">${record.task}</div>
+                <div class="record-task">${escapeHtml(record.task)}</div>
                 <div class="record-time">${formatTime(start)} - ${formatTime(end)}</div>
                 <div class="record-duration">${duration}</div>
                 <div class="record-actions">
@@ -587,7 +670,15 @@ function formatDuration(seconds) {
 
 function getTaskRecords() {
     const data = localStorage.getItem('task-records');
-    return data ? JSON.parse(data) : [];
+    if (data) {
+        try {
+            return JSON.parse(data);
+        } catch (e) {
+            console.error('業務記録の読み込みに失敗:', e);
+            localStorage.removeItem('task-records');
+        }
+    }
+    return [];
 }
 
 function saveTaskRecords(records) {
@@ -608,6 +699,7 @@ function deleteRecord(index) {
 
 // 現在記録中のタスクを編集
 function editCurrentTask() {
+    closeEditModal();
     const startTime = new Date(taskStartTime);
     const startTimeStr = `${String(startTime.getHours()).padStart(2, '0')}:${String(startTime.getMinutes()).padStart(2, '0')}`;
 
@@ -619,7 +711,7 @@ function editCurrentTask() {
             <h3>記録中の業務を編集</h3>
             <div class="edit-form">
                 <label>業務名:</label>
-                <input type="text" id="edit-current-task" value="${currentTask}" class="edit-input">
+                <input type="text" id="edit-current-task" value="${escapeHtml(currentTask)}" class="edit-input">
 
                 <label>開始時刻:</label>
                 <input type="time" id="edit-current-start" value="${startTimeStr}" class="edit-input">
@@ -673,6 +765,7 @@ function saveEditedCurrentTask() {
 
 // 記録の編集
 function editRecord(index) {
+    closeEditModal();
     const records = getTaskRecords();
     const record = records[index];
 
@@ -687,7 +780,7 @@ function editRecord(index) {
             <h3>記録の編集</h3>
             <div class="edit-form">
                 <label>業務名:</label>
-                <input type="text" id="edit-task" value="${record.task}" class="edit-input">
+                <input type="text" id="edit-task" value="${escapeHtml(record.task)}" class="edit-input">
 
                 <label>開始時刻:</label>
                 <input type="time" id="edit-start" value="${formatTime(start)}" class="edit-input">
@@ -757,10 +850,7 @@ function saveEditedRecord(index) {
 }
 
 function closeEditModal() {
-    const modal = document.querySelector('.edit-modal');
-    if (modal) {
-        modal.remove();
-    }
+    document.querySelectorAll('.edit-modal').forEach(modal => modal.remove());
 }
 
 // ========================================
@@ -792,6 +882,8 @@ function exportTasksOnly() {
 
 // 業務項目のみインポート（定型文設定も含む）
 function importTasksOnly() {
+    if (!confirm('業務項目と定型文設定をインポートすると既存の設定が上書きされます。\n続行しますか？')) return;
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -901,6 +993,13 @@ function exportRecordsJSON() {
 
 // JSON形式でデータ読込（定型文設定も含む）
 function importRecordsJSON() {
+    const existingRecords = getTaskRecords();
+    const warning = existingRecords.length > 0
+        ? `現在${existingRecords.length}件の業務記録があります。インポートすると既存データが上書きされます。\n続行しますか？`
+        : 'データをインポートしますか？';
+
+    if (!confirm(warning)) return;
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -913,6 +1012,11 @@ function importRecordsJSON() {
         reader.onload = (event) => {
             try {
                 const data = JSON.parse(event.target.result);
+
+                // 記録中のタスクがあれば停止
+                if (currentTask) {
+                    stopTask();
+                }
 
                 if (data.quickTasks) {
                     saveQuickTasks(data.quickTasks);
@@ -1205,7 +1309,15 @@ function renderOrderList() {
 
 function getOrderList() {
     const data = localStorage.getItem('order-list');
-    return data ? JSON.parse(data) : [];
+    if (data) {
+        try {
+            return JSON.parse(data);
+        } catch (e) {
+            console.error('発注リストの読み込みに失敗:', e);
+            localStorage.removeItem('order-list');
+        }
+    }
+    return [];
 }
 
 function saveOrderList(list) {
@@ -1243,7 +1355,6 @@ async function loadExchangeRates() {
 function calculateDelivery() {
     const orderDateStr = document.getElementById('calc-order-date').value;
     const leadTime = parseInt(document.getElementById('calc-lead-time').value);
-    const mode = document.getElementById('calc-mode').value;
 
     if (!orderDateStr) {
         alert('発注日を選択してください');
@@ -1255,38 +1366,43 @@ function calculateDelivery() {
         return;
     }
 
-    const orderDate = new Date(orderDateStr);
-    let currentDate = new Date(orderDate);
+    const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+    // YYYY-MM-DD をローカル日付として解釈（new Date('YYYY-MM-DD')はUTC解釈されるため）
+    const [y, m, d] = orderDateStr.split('-').map(Number);
+    const orderDate = new Date(y, m - 1, d);
 
-    if (mode === 'business') {
-        // 営業日計算（土日祝を除外）
-        let businessDays = 0;
-        while (businessDays < leadTime) {
-            currentDate.setDate(currentDate.getDate() + 1);
-            const dayOfWeek = currentDate.getDay();
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const day = currentDate.getDate();
-            const isHol = isHoliday(year, month, day);
-
-            // 土日祝日を除外
-            if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isHol) {
-                businessDays++;
-            }
+    // 営業日計算（土日祝を除外）
+    let businessDate = new Date(orderDate);
+    let businessDays = 0;
+    while (businessDays < leadTime) {
+        businessDate.setDate(businessDate.getDate() + 1);
+        const dayOfWeek = businessDate.getDay();
+        const isHol = isHoliday(businessDate.getFullYear(), businessDate.getMonth(), businessDate.getDate());
+        if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isHol) {
+            businessDays++;
         }
-    } else {
-        // 暦日計算（全ての日を含む）
-        currentDate.setDate(currentDate.getDate() + leadTime);
     }
 
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-    const date = currentDate.getDate();
-    const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
-    const day = dayNames[currentDate.getDay()];
+    // 祝日考慮計算（土日は含むが祝日のみ除外）
+    let holidayAwareDate = new Date(orderDate);
+    let holidayAwareDays = 0;
+    while (holidayAwareDays < leadTime) {
+        holidayAwareDate.setDate(holidayAwareDate.getDate() + 1);
+        const isHol = isHoliday(holidayAwareDate.getFullYear(), holidayAwareDate.getMonth(), holidayAwareDate.getDate());
+        if (!isHol) {
+            holidayAwareDays++;
+        }
+    }
 
-    const resultSpan = document.getElementById('calc-result');
-    resultSpan.textContent = `→ ${month}/${date}（${day}）`;
+    // 暦日計算（全ての日を含む）
+    let calendarDate = new Date(orderDate);
+    calendarDate.setDate(calendarDate.getDate() + leadTime);
+
+    const formatResult = (d) => `${d.getMonth() + 1}/${d.getDate()}（${dayNames[d.getDay()]}）`;
+
+    document.getElementById('calc-result-business').textContent = formatResult(businessDate);
+    document.getElementById('calc-result-holiday-aware').textContent = formatResult(holidayAwareDate);
+    document.getElementById('calc-result-calendar').textContent = formatResult(calendarDate);
 }
 
 // ========================================
@@ -1487,6 +1603,9 @@ function init() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('calc-order-date').value = today;
 
+    // 祝日データの範囲チェック
+    checkHolidayDataRange();
+
     // カウントダウンタイマー初期化（砂が下の状態）
     const miniContainer = document.getElementById('mini-hourglass-container');
     const miniSandTop = document.getElementById('mini-sand-top');
@@ -1519,7 +1638,12 @@ const defaultTemplates = [
 function getTemplateSettings() {
     const saved = localStorage.getItem('template-settings');
     if (saved) {
-        return JSON.parse(saved);
+        try {
+            return JSON.parse(saved);
+        } catch (e) {
+            console.error('定型文設定の読み込みに失敗:', e);
+            localStorage.removeItem('template-settings');
+        }
     }
     return {
         name: '前田',
@@ -1553,7 +1677,7 @@ function renderTemplateList() {
         html += `
             <div class="template-item">
                 <div class="template-text" onclick="copyTemplate(${index})" title="クリックでコピー">
-                    ${template}
+                    ${escapeHtml(template)}
                 </div>
                 <button class="template-copy-btn" onclick="copyTemplate(${index})" title="コピー">📋</button>
             </div>
@@ -1571,13 +1695,32 @@ function copyTemplate(index) {
     const formattedText = `${today}（${settings.name}）${template}`;
 
     // クリップボードにコピー
-    navigator.clipboard.writeText(formattedText).then(() => {
-        // コピー成功のフィードバック
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(formattedText).then(() => {
+            showCopyFeedback(index);
+        }).catch(err => {
+            console.error('コピー失敗:', err);
+            fallbackCopy(formattedText, index);
+        });
+    } else {
+        fallbackCopy(formattedText, index);
+    }
+}
+
+function fallbackCopy(text, index) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+        document.execCommand('copy');
         showCopyFeedback(index);
-    }).catch(err => {
-        console.error('コピー失敗:', err);
+    } catch (err) {
         alert('クリップボードへのコピーに失敗しました');
-    });
+    }
+    document.body.removeChild(textarea);
 }
 
 // コピー成功のフィードバック表示
@@ -1593,6 +1736,7 @@ function showCopyFeedback(index) {
 
 // 定型文設定モーダルを開く
 function openTemplateSettings() {
+    closeEditModal();
     const settings = getTemplateSettings();
 
     const modal = document.createElement('div');
@@ -1602,19 +1746,19 @@ function openTemplateSettings() {
             <h3>定型文設定</h3>
             <div class="edit-form">
                 <label>名前:</label>
-                <input type="text" id="template-name" value="${settings.name}" class="edit-input" placeholder="前田">
+                <input type="text" id="template-name" value="${escapeHtml(settings.name)}" class="edit-input" placeholder="前田">
 
                 <label>定型文 1:</label>
-                <input type="text" id="template-1" value="${settings.templates[0] || ''}" class="edit-input" placeholder="現時点では上記希望納期対応可能です">
+                <input type="text" id="template-1" value="${escapeHtml(settings.templates[0] || '')}" class="edit-input" placeholder="現時点では上記希望納期対応可能です">
 
                 <label>定型文 2:</label>
-                <input type="text" id="template-2" value="${settings.templates[1] || ''}" class="edit-input" placeholder="現時点では在庫にて上記希望納期対応可能です">
+                <input type="text" id="template-2" value="${escapeHtml(settings.templates[1] || '')}" class="edit-input" placeholder="現時点では在庫にて上記希望納期対応可能です">
 
                 <label>定型文 3:</label>
-                <input type="text" id="template-3" value="${settings.templates[2] || ''}" class="edit-input" placeholder="PN登録中">
+                <input type="text" id="template-3" value="${escapeHtml(settings.templates[2] || '')}" class="edit-input" placeholder="PN登録中">
 
                 <label>定型文 4:</label>
-                <input type="text" id="template-4" value="${settings.templates[3] || ''}" class="edit-input" placeholder="納期確認中">
+                <input type="text" id="template-4" value="${escapeHtml(settings.templates[3] || '')}" class="edit-input" placeholder="納期確認中">
 
                 <div class="template-preview">
                     <label>プレビュー:</label>
@@ -1622,7 +1766,7 @@ function openTemplateSettings() {
                 </div>
 
                 <div class="edit-buttons">
-                    <button onclick="saveTemplateSettings()" class="save-btn">保存</button>
+                    <button onclick="saveTemplateSettingsFromModal()" class="save-btn">保存</button>
                     <button onclick="closeEditModal()" class="cancel-btn">キャンセル</button>
                 </div>
             </div>
@@ -1688,7 +1832,7 @@ function saveTemplateSettingsFromModal() {
 }
 
 // グローバルスコープに関数を公開
-window.saveTemplateSettings = saveTemplateSettingsFromModal;
+window.saveTemplateSettingsFromModal = saveTemplateSettingsFromModal;
 
 // ページ読み込み時に初期化
 document.addEventListener('DOMContentLoaded', init);

@@ -331,12 +331,12 @@
                             <input type="date" id="calc-order-date" class="calc-input">
                             <label>LT:</label>
                             <input type="number" id="calc-lead-time" value="14" min="1" class="calc-input-number">
-                            <select id="calc-mode" class="calc-select">
-                                <option value="business">営業日</option>
-                                <option value="calendar">暦日</option>
-                            </select>
                             <button onclick="calculateDelivery()" class="calc-btn">計算</button>
-                            <span id="calc-result" class="calc-result"></span>
+                            <div id="calc-results" class="calc-results">
+                                <span class="calc-result-item business"><span class="calc-result-label">営業日</span><span id="calc-result-business" class="calc-result-value">-</span></span>
+                                <span class="calc-result-item holiday-aware"><span class="calc-result-label">祝日考慮</span><span id="calc-result-holiday-aware" class="calc-result-value">-</span></span>
+                                <span class="calc-result-item calendar"><span class="calc-result-label">暦日</span><span id="calc-result-calendar" class="calc-result-value">-</span></span>
+                            </div>
                         </div>
                     </div>
                     <div id="calendar-container"></div>

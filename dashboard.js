@@ -3,7 +3,15 @@
 // ========================================
 function getTaskRecords() {
     const data = localStorage.getItem('task-records');
-    return data ? JSON.parse(data) : [];
+    if (data) {
+        try {
+            return JSON.parse(data);
+        } catch (e) {
+            console.error('業務記録の読み込みに失敗:', e);
+            localStorage.removeItem('task-records');
+        }
+    }
+    return [];
 }
 
 // ========================================

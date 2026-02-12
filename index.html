@@ -10,35 +10,45 @@
     <div class="container">
         <!-- メインコンテンツエリア -->
         <div class="main-content">
-            <!-- 統合セクション: 時計と業務記録 -->
+            <!-- 上段: 時計・砂時計・定型文と業務記録 -->
             <div class="top-section">
-                <section class="unified-work-section">
-                    <!-- 左側セクション: 時計と砂時計エリア -->
-                    <section class="time-display-section">
-                    <div class="time-display-area">
-                        <!-- 時計と日付の上部エリア -->
-                        <div class="clock-info-area">
-                            <div id="digital-time" class="digital-time-compact"></div>
-                            <div id="current-date-display" class="date-display-compact"></div>
-                        </div>
-
-                        <!-- 砂時計を並べるエリア -->
-                        <div class="hourglasses-container">
-                            <!-- 勤務時間砂時計 -->
-                            <div class="work-hourglass-wrapper">
-                                <div class="work-time-settings">
-                                    <div class="work-time-inputs-compact">
-                                        <input type="time" id="work-start-time" value="08:30" class="time-input">
-                                        <span>-</span>
-                                        <input type="time" id="work-end-time" value="17:30" class="time-input">
-                                        <button onclick="updateWorkTimeSettings()" class="time-save-btn">設定</button>
+                <div class="horizontal-sections">
+                    <!-- 左側: 時計・砂時計・定型文エリア -->
+                    <div class="left-column">
+                        <!-- 時計と砂時計エリア（2/3） -->
+                        <section class="template-section hourglass-section">
+                        <div class="time-display-area">
+                            <!-- 時計と日付の上部エリア -->
+                            <div class="clock-info-area">
+                                <div class="clock-and-settings">
+                                    <!-- 全設定管理ボタン -->
+                                    <div class="settings-management">
+                                        <button onclick="exportAllSettings()" class="export-all-btn" title="全設定をファイルに保存">💾 全設定保存</button>
+                                        <button onclick="importAllSettings()" class="import-all-btn" title="全設定をファイルから読込">📂 全設定読込</button>
+                                        <a href="help.html" target="_blank" rel="noopener noreferrer" class="help-btn" title="使い方説明書">❓</a>
                                     </div>
-                                    <div class="time-info-compact">
-                                        <div id="elapsed-time">経過: 0:00</div>
-                                        <div id="remaining-time">残り: 9:00</div>
+                                    <div class="clock-date-group">
+                                        <div id="current-date-display" class="date-display-compact"></div>
+                                        <div id="digital-time" class="digital-time-compact"></div>
                                     </div>
                                 </div>
-                                <div class="hourglass-container" id="hourglass-container">
+                            </div>
+
+                            <!-- 砂時計を並べるエリア -->
+                            <div class="hourglasses-container">
+                                <!-- 勤務時間砂時計 -->
+                                <div class="work-hourglass-wrapper">
+                                    <div class="work-time-settings">
+                                        <div class="work-time-inputs-compact">
+                                            <input type="time" id="work-start-time" value="08:30" class="time-input">
+                                            <span>-</span>
+                                            <input type="time" id="work-end-time" value="17:30" class="time-input">
+                                            <button onclick="updateWorkTimeSettings()" class="time-save-btn">設定</button>
+                                        </div>
+                                    </div>
+                                    <div class="hourglass-with-time">
+                                        <div id="remaining-time" class="remaining-time-overlay">残り: 9:00</div>
+                                        <div class="hourglass-container" id="hourglass-container">
                             <div class="hourglass">
                                 <!-- 上部キャピタル（柱頭） -->
                                 <div class="column-capital top">
@@ -82,19 +92,21 @@
                                     <div class="capital-echinus"></div>
                                     <div class="capital-abacus"></div>
                                 </div>
-                            </div>
+                                    </div>
+                                        </div>
+                                        <div id="elapsed-time" class="elapsed-time-overlay">経過: 0:00</div>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <!-- カウントダウン砂時計 -->
-                            <div class="timer-section">
-                        <div class="timer-controls">
-                            <input type="number" id="countdown-minutes" min="1" max="180" value="5" placeholder="分">
-                            <button onclick="startCountdownTimer()" class="timer-btn">開始</button>
-                            <button onclick="stopCountdownTimer()" class="timer-btn-stop">停止</button>
-                        </div>
-                        <div class="countdown-display" id="countdown-display">5:00</div>
-                        <div class="mini-hourglass-container" id="mini-hourglass-container">
+                                <!-- カウントダウン砂時計 -->
+                                <div class="timer-section">
+                                    <div class="timer-controls">
+                                        <input type="number" id="countdown-minutes" min="1" max="180" value="5" placeholder="分">
+                                        <button onclick="startCountdownTimer()" class="timer-btn">開始</button>
+                                        <button onclick="stopCountdownTimer()" class="timer-btn-stop">停止</button>
+                                    </div>
+                                    <div class="countdown-display" id="countdown-display">5:00</div>
+                                    <div class="mini-hourglass-container" id="mini-hourglass-container">
                             <div class="mini-hourglass">
                                 <!-- 上部キャピタル（柱頭） -->
                                 <div class="mini-column-capital mini-top">
@@ -138,27 +150,36 @@
                                     <div class="mini-capital-echinus"></div>
                                     <div class="mini-capital-abacus"></div>
                                 </div>
-                            </div>
+                                    </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    </section>
+                        </section>
 
-                    <!-- 右側セクション: 業務記録 -->
-                    <section class="business-record-section">
-                    <div class="business-record-area">
+                        <!-- 定型文セクション（1/3） -->
+                        <section class="template-section template-compact-section">
+                            <div class="template-text-section">
+                                <div class="template-header">
+                                    <h3>定型文</h3>
+                                    <button onclick="openTemplateSettings()" class="template-settings-btn" title="設定">⚙</button>
+                                </div>
+                                <div id="template-list" class="template-list"></div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- 右側: 業務記録 -->
+                    <section class="template-section">
+                        <div class="business-record-area">
                         <div class="record-header">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <h2 style="margin: 0;">業務記録</h2>
-                                <a href="dashboard.html" class="dashboard-link" title="業務分析ダッシュボード">📊 分析</a>
+                                <a href="dashboard.html" target="_blank" rel="noopener noreferrer" class="dashboard-link" title="業務分析ダッシュボード">📊 分析</a>
                             </div>
                             <div class="record-actions">
-                                <button onclick="exportRecordsCSV()" class="export-btn" title="記録をCSVで出力">CSV</button>
-                                <button onclick="exportTasksOnly()" class="export-btn" title="業務項目のみ保存">項目保存</button>
-                                <button onclick="importTasksOnly()" class="import-btn" title="業務項目のみ読込">項目読込</button>
-                                <button onclick="importRecordsJSON()" class="import-btn" title="全データ読込">全読込</button>
-                                <button onclick="exportRecordsJSON()" class="export-btn" title="全データ保存">全保存</button>
-                                <button onclick="clearRecords()" class="clear-btn" title="記録のみリセット">記録削除</button>
+                                <button onclick="exportRecordsCSV()" class="export-btn" title="業務記録をCSV出力">CSV出力</button>
+                                <button onclick="clearRecords()" class="clear-btn" title="業務記録のみ削除">記録削除</button>
                             </div>
                         </div>
 
@@ -174,24 +195,101 @@
                         <!-- 現在の作業 -->
                         <div id="current-task" class="current-task"></div>
 
-                        <!-- 記録リスト -->
-                        <div id="record-list" class="record-list"></div>
-                    </div>
+                            <!-- 記録リスト -->
+                            <div id="record-list" class="record-list"></div>
+                        </div>
                     </section>
-                </section>
+                </div>
             </div>
 
-            <!-- 中段: 定型文 -->
-            <div class="middle-section">
-                <section class="template-section">
-                    <div class="template-text-section">
-                        <div class="template-header">
-                            <h3>定型文</h3>
-                            <button onclick="openTemplateSettings()" class="template-settings-btn" title="設定">⚙</button>
+
+            <!-- 出荷・入荷グラフラッパー（レスポンシブ対応） -->
+            <div class="charts-wrapper">
+                <!-- 出荷データ可視化セクション -->
+                <div class="shipment-section">
+                    <section class="template-section">
+                        <div class="shipment-chart-section">
+                            <div class="template-header">
+                                <h3>出荷データ可視化</h3>
+                                <button onclick="openCapacitySettings()" class="template-settings-btn" title="キャパシティ設定" id="capacity-settings-btn" style="display: none;">⚙</button>
+                            </div>
+                            <div class="shipment-chart-content">
+                                <!-- CSVファイル選択 -->
+                                <div class="csv-select-group">
+                                    <label class="csv-label">CSVファイルパス:</label>
+                                    <input type="text" id="csv-path-input" class="csv-path-input"
+                                           value="N:\業務本部\資材課\0-00_総合\ダッシュボード\出荷指示明細リスト.csv" readonly>
+                                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;" onchange="handleCSVFileSelect(event)">
+                                    <button onclick="document.getElementById('csv-file-input').click()" class="csv-select-btn">📁 ファイル選択</button>
+                                    <button onclick="loadShipmentData()" class="csv-load-btn">📊 データ読込</button>
+                                </div>
+
+                                <!-- ステータス表示 -->
+                                <div id="shipment-status" class="shipment-status"></div>
+
+                                <!-- タブとナビゲーション -->
+                                <div class="chart-controls" id="chart-controls" style="display: none;">
+                                    <div class="warehouse-tabs" id="warehouse-tabs"></div>
+                                    <div class="chart-navigation">
+                                        <button onclick="previousPeriod()" class="nav-btn">◀ 前</button>
+                                        <span id="current-period" class="period-label"></span>
+                                        <button onclick="nextPeriod()" class="nav-btn">次 ▶</button>
+                                    </div>
+                                </div>
+
+                                <!-- グラフ -->
+                                <div class="chart-and-table" id="chart-and-table" style="display: none;">
+                                    <div class="chart-container" id="chart-container">
+                                        <canvas id="shipment-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div id="template-list" class="template-list"></div>
+                    </section>
+                </div>
+
+                <!-- 入荷待ちデータ可視化セクション -->
+                <div class="arrival-section">
+                <section class="template-section">
+                    <div class="arrival-chart-section">
+                        <div class="template-header">
+                            <h3>入荷待ちデータ可視化</h3>
+                            <button onclick="openWarehouseMappingSettings()" class="template-settings-btn" title="倉庫マッピング設定" id="warehouse-mapping-btn">⚙</button>
+                        </div>
+                        <div class="arrival-chart-content">
+                            <!-- CSVファイル選択 -->
+                            <div class="csv-select-group">
+                                <label class="csv-label">CSVファイルパス:</label>
+                                <input type="text" id="arrival-csv-path-input" class="csv-path-input"
+                                       value="N:\業務本部\資材課\0-00_総合\ダッシュボード\資材状況リスト.csv" readonly>
+                                <input type="file" id="arrival-csv-file-input" accept=".csv" style="display: none;" onchange="handleArrivalCSVFileSelect(event)">
+                                <button onclick="document.getElementById('arrival-csv-file-input').click()" class="csv-select-btn">📁 ファイル選択</button>
+                                <button onclick="loadArrivalData()" class="csv-load-btn">📊 データ読込</button>
+                            </div>
+
+                            <!-- ステータス表示 -->
+                            <div id="arrival-status" class="shipment-status"></div>
+
+                            <!-- タブとナビゲーション -->
+                            <div class="chart-controls" id="arrival-chart-controls" style="display: none;">
+                                <div class="warehouse-tabs" id="arrival-warehouse-tabs"></div>
+                                <div class="chart-navigation">
+                                    <button onclick="previousArrivalPeriod()" class="nav-btn">◀ 前</button>
+                                    <span id="arrival-current-period" class="period-label"></span>
+                                    <button onclick="nextArrivalPeriod()" class="nav-btn">次 ▶</button>
+                                </div>
+                            </div>
+
+                            <!-- グラフ -->
+                            <div class="chart-and-table" id="arrival-chart-and-table" style="display: none;">
+                                <div class="chart-container" id="arrival-chart-container">
+                                    <canvas id="arrival-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
+                </div>
             </div>
 
             <!-- 下段: カレンダー -->
@@ -204,6 +302,29 @@
                                 <button onclick="previousMonths()" class="nav-btn">◀ 前</button>
                                 <button onclick="resetToCurrentMonth()" class="nav-btn">今月</button>
                                 <button onclick="nextMonths()" class="nav-btn">次 ▶</button>
+                            </div>
+                        </div>
+                        <div class="calendar-legend">
+                            <div class="legend-item">
+                                <input type="checkbox" id="toggle-work-records" class="legend-toggle" checked onchange="toggleCalendarDisplay()">
+                                <label for="toggle-work-records" class="legend-toggle-label">
+                                    <div class="legend-indicator work-indicator"></div>
+                                    <span>業務記録</span>
+                                </label>
+                            </div>
+                            <div class="legend-item">
+                                <input type="checkbox" id="toggle-shipment" class="legend-toggle" checked onchange="toggleCalendarDisplay()">
+                                <label for="toggle-shipment" class="legend-toggle-label">
+                                    <div class="legend-bar shipment-bar-sample"></div>
+                                    <span>📦 出荷数</span>
+                                </label>
+                            </div>
+                            <div class="legend-item">
+                                <input type="checkbox" id="toggle-arrival" class="legend-toggle" checked onchange="toggleCalendarDisplay()">
+                                <label for="toggle-arrival" class="legend-toggle-label">
+                                    <div class="legend-bar arrival-bar-sample"></div>
+                                    <span>📥 入荷数</span>
+                                </label>
                             </div>
                         </div>
                         <div class="delivery-calculator">
@@ -224,6 +345,115 @@
         </div>
     </div>
 
+    <!-- 業務詳細ポップアップ -->
+    <div id="work-detail-modal" class="work-detail-modal" style="display: none;">
+        <div class="work-detail-modal-content">
+            <div class="work-detail-header">
+                <h3 id="work-detail-date"></h3>
+                <button onclick="closeWorkDetailModal()" class="close-modal-btn">×</button>
+            </div>
+            <div class="work-detail-body">
+                <div class="work-detail-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">総作業時間:</span>
+                        <span class="summary-value" id="total-work-time">0時間0分</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">業務件数:</span>
+                        <span class="summary-value" id="work-count">0件</span>
+                    </div>
+                </div>
+                <div class="work-detail-list" id="work-detail-list">
+                    <p class="no-data">この日の業務記録はありません</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- キャパシティ設定モーダル -->
+    <div id="capacity-modal" class="capacity-modal" style="display: none;">
+        <div class="capacity-modal-content">
+            <div class="capacity-modal-header">
+                <h3>倉庫別キャパシティ設定</h3>
+                <button onclick="closeCapacityModal()" class="close-modal-btn">×</button>
+            </div>
+            <div class="capacity-modal-body">
+                <div class="capacity-inputs" id="capacity-inputs-modal"></div>
+            </div>
+            <div class="capacity-modal-footer">
+                <button onclick="saveCapacitySettings()" class="capacity-save-btn">💾 設定保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 倉庫マッピング設定モーダル -->
+    <div id="warehouse-mapping-modal" class="capacity-modal" style="display: none;">
+        <div class="capacity-modal-content">
+            <div class="capacity-modal-header">
+                <h3>倉庫マッピング設定</h3>
+                <button onclick="closeWarehouseMappingModal()" class="close-modal-btn">×</button>
+            </div>
+            <div class="capacity-modal-body">
+                <p style="margin-bottom: 15px; color: #b0b0b0; font-size: 13px;">
+                    発注納入先住所の一部文字列で倉庫を判定します。各倉庫のキーワードとキャパシティを設定してください。
+                </p>
+                <div class="warehouse-mapping-inputs" id="warehouse-mapping-inputs">
+                    <div class="warehouse-mapping-item">
+                        <label>倉庫1 名称:</label>
+                        <input type="text" id="warehouse-1-name" class="warehouse-name-input" placeholder="例: MCUD神戸西倉庫">
+                        <label>判定キーワード:</label>
+                        <input type="text" id="warehouse-1-keyword" class="warehouse-keyword-input" placeholder="例: 兵庫県神戸市須磨区弥栄台">
+                        <label>入荷キャパシティ:</label>
+                        <input type="number" id="warehouse-1-arrival-capacity" class="warehouse-capacity-input" placeholder="例: 100">
+                    </div>
+                    <div class="warehouse-mapping-item">
+                        <label>倉庫2 名称:</label>
+                        <input type="text" id="warehouse-2-name" class="warehouse-name-input" placeholder="例: 横浜倉庫">
+                        <label>判定キーワード:</label>
+                        <input type="text" id="warehouse-2-keyword" class="warehouse-keyword-input" placeholder="例: 神奈川県横浜市">
+                        <label>入荷キャパシティ:</label>
+                        <input type="number" id="warehouse-2-arrival-capacity" class="warehouse-capacity-input" placeholder="例: 100">
+                    </div>
+                    <div class="warehouse-mapping-item">
+                        <label>倉庫3 名称:</label>
+                        <input type="text" id="warehouse-3-name" class="warehouse-name-input" placeholder="例: 大阪倉庫">
+                        <label>判定キーワード:</label>
+                        <input type="text" id="warehouse-3-keyword" class="warehouse-keyword-input" placeholder="例: 大阪府">
+                        <label>入荷キャパシティ:</label>
+                        <input type="number" id="warehouse-3-arrival-capacity" class="warehouse-capacity-input" placeholder="例: 100">
+                    </div>
+                    <div class="warehouse-mapping-item">
+                        <label>倉庫4 名称:</label>
+                        <input type="text" id="warehouse-4-name" class="warehouse-name-input" placeholder="例: 名古屋倉庫">
+                        <label>判定キーワード:</label>
+                        <input type="text" id="warehouse-4-keyword" class="warehouse-keyword-input" placeholder="例: 愛知県名古屋市">
+                        <label>入荷キャパシティ:</label>
+                        <input type="number" id="warehouse-4-arrival-capacity" class="warehouse-capacity-input" placeholder="例: 100">
+                    </div>
+                    <div class="warehouse-mapping-item">
+                        <label>倉庫5 名称:</label>
+                        <input type="text" id="warehouse-5-name" class="warehouse-name-input" placeholder="例: 福岡倉庫">
+                        <label>判定キーワード:</label>
+                        <input type="text" id="warehouse-5-keyword" class="warehouse-keyword-input" placeholder="例: 福岡県">
+                        <label>入荷キャパシティ:</label>
+                        <input type="number" id="warehouse-5-arrival-capacity" class="warehouse-capacity-input" placeholder="例: 100">
+                    </div>
+                </div>
+            </div>
+            <div class="capacity-modal-footer">
+                <button onclick="saveWarehouseMappingSettings()" class="capacity-save-btn">💾 設定保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SheetJSライブラリ (.xls/.xlsx両対応) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <!-- Chart.jsライブラリ (グラフ描画用) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Chart.js データラベルプラグイン -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <!-- PapaParse (CSV解析用) -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

@@ -16,7 +16,7 @@
                     <!-- 左側: 時計・砂時計・定型文エリア -->
                     <div class="left-column">
                         <!-- 時計と砂時計エリア（2/3） -->
-                        <section class="template-section hourglass-section">
+                        <section class="template-section hourglass-section tab-section tab-active" id="section-clock">
                         <div class="time-display-area">
                             <!-- 時計と日付の上部エリア -->
                             <div class="clock-info-area">
@@ -158,7 +158,7 @@
                         </section>
 
                         <!-- 定型文セクション（1/3） -->
-                        <section class="template-section template-compact-section">
+                        <section class="template-section template-compact-section tab-section" id="section-template">
                             <div class="template-text-section">
                                 <div class="template-header">
                                     <h3>定型文</h3>
@@ -170,7 +170,7 @@
                     </div>
 
                     <!-- 右側: 業務記録 -->
-                    <section class="template-section">
+                    <section class="template-section tab-section" id="section-record">
                         <div class="business-record-area">
                         <div class="record-header">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -203,7 +203,7 @@
             </div>
 
             <!-- 下段: カレンダー -->
-            <div class="bottom-section">
+            <div class="bottom-section tab-section" id="section-calendar">
                 <section class="calendar-section">
                     <div class="calendar-header-section">
                         <div class="calendar-navigation">
@@ -264,6 +264,26 @@
     </div>
 
 
+
+    <!-- モバイルタブバー -->
+    <nav class="mobile-tab-bar" id="mobile-tab-bar">
+        <button class="tab-btn active" onclick="switchTab('clock')" data-tab="clock">
+            <span class="tab-icon">⏳</span>
+            <span class="tab-label">砂時計</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('template')" data-tab="template">
+            <span class="tab-icon">📋</span>
+            <span class="tab-label">定型文</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('record')" data-tab="record">
+            <span class="tab-icon">📝</span>
+            <span class="tab-label">業務記録</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('calendar')" data-tab="calendar">
+            <span class="tab-icon">📅</span>
+            <span class="tab-label">カレンダー</span>
+        </button>
+    </nav>
 
     <!-- SheetJSライブラリ (.xls/.xlsx両対応) -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>

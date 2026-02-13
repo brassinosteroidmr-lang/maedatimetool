@@ -2741,5 +2741,28 @@ function playNotificationSound() {
     }
 }
 
+// ========================================
+// モバイルタブ切り替え
+// ========================================
+function switchTab(tabName) {
+    // 全タブセクションを非表示
+    document.querySelectorAll('.tab-section').forEach(section => {
+        section.classList.remove('tab-active');
+    });
+
+    // 指定タブを表示
+    const activeSection = document.getElementById('section-' + tabName);
+    if (activeSection) {
+        activeSection.classList.add('tab-active');
+    }
+
+    // タブボタンのアクティブ状態を更新
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+}
+
+window.switchTab = switchTab;
+
 // ページ読み込み時に初期化
 document.addEventListener('DOMContentLoaded', init);

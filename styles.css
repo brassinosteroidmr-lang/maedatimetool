@@ -2455,7 +2455,7 @@ body {
     flex: 2;
     min-height: 0;
     margin-bottom: 20px;
-    overflow: hidden; /* はみ出し防止 */
+    overflow: visible; /* ラベルのはみ出しを許容 */
 }
 
 /* コンパクト定型文セクション（1/3の高さ） */
@@ -3061,9 +3061,128 @@ body {
 }
 
 
+/* ========================================
+   モバイルタブバー（PC では非表示）
+   ======================================== */
+.mobile-tab-bar {
+    display: none;
+}
+
+/* ========================================
+   モバイルレイアウト（768px 以下）
+   ======================================== */
+@media (max-width: 768px) {
+    /* タブバー分の余白 */
+    body {
+        padding-bottom: 66px;
+    }
+
+    /* タブバー表示 */
+    .mobile-tab-bar {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: #1a1a1a;
+        border-top: 1px solid #3a3a3a;
+        z-index: 1000;
+    }
+
+    .tab-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        border-top: 2px solid transparent;
+        color: #606060;
+        cursor: pointer;
+        gap: 2px;
+        transition: color 0.2s, border-color 0.2s;
+        padding: 6px 0;
+    }
+
+    .tab-btn.active {
+        color: #c8c8c8;
+        border-top-color: #5a9fd4;
+    }
+
+    .tab-icon {
+        font-size: 18px;
+        line-height: 1;
+    }
+
+    .tab-label {
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
+    /* レイアウト構造をブロックに変更 */
+    .horizontal-sections {
+        display: block;
+    }
+
+    .left-column {
+        display: block;
+        height: auto;
+    }
+
+    /* タブセクション：非表示がデフォルト */
+    .tab-section {
+        display: none;
+        margin-bottom: 0;
+    }
+
+    .tab-section.tab-active {
+        display: block;
+    }
+
+    /* 定型文セクションの flex 解除 */
+    .template-compact-section {
+        flex: none;
+    }
+
+    /* 砂時計ラベルのはみ出し修正 */
+    .hourglass-with-time {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .remaining-time-overlay,
+    .elapsed-time-overlay {
+        position: static;
+        text-align: center;
+        margin: 2px 0;
+    }
+
+    /* モーダル幅の修正 */
+    .edit-modal-content,
+    .template-modal-content {
+        min-width: 90vw;
+        max-width: 90vw;
+        padding: 16px;
+    }
+
+    /* カレンダーヘッダーの折り返し対応 */
+    .calendar-header-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .delivery-calculator {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+}
+
 @media (max-width: 600px) {
     .horizontal-sections {
-        grid-template-columns: 1fr;
+        display: block;
     }
 
     #calendar-container {
